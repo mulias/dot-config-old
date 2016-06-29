@@ -1,0 +1,50 @@
+# i3blocks config file
+
+# Global properties
+#
+# The top properties below are applied to every block, but can be overridden.
+# Each block command defaults to the script name to avoid boilerplate.
+command=~/bin/i3blocklets/$BLOCK_NAME
+separator_block_width=15
+align=left
+markup=none
+
+# mpd script blocks, and then triggers when the status of mpd changes. This 
+# method provides prompt feedback, but is not compatible with mouse interaction.
+[mpd]
+interval=repeat
+
+# If wired is on, show wired connection, otherwise show wifi strength
+# On left click, launch connman-gtk
+[network]
+instance=enp0s25;wlp3s0
+min_width=50
+interval=1
+
+# while the battery is charging or discharging, display time until done with +/-
+# while holding steady, show percent charge 
+# Ff there is no batters, display '---'
+[battery]
+label= 
+min_width=54
+interval=5
+
+# display volume in percent, or 'mute'
+# use signal 10 to update on volume buttons
+[audio]
+label= 
+align=left
+min_width=45
+signal=10
+interval=60
+
+# display percentage of memory used
+[memory]
+label= 
+interval=60
+
+# display month/day, hour:minute
+[datetime]
+label= 
+instance=%m/%d, %I:%M %p
+interval=20

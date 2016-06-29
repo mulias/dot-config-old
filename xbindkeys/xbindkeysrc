@@ -1,0 +1,71 @@
+# m:0x0 is the Fn key. The sleep, wireless on/off, and brightness media keys
+# work out of the box with Fn+F4, Fn+5, Fn+8/9 respectivly
+# This is actually kind of a problem because I would like to remap them
+# I am using the propper mapping for music play/pause and next/prev, valume +/-
+# and external display. For the buttons I would like to remap but can't, I'm
+# using Ctrl+1 for my shutdown menu, Ctrl+2 for hybrid-sleep, etc. When possible
+# the Ctrl+n mapping goes right under the Fn button I would like to use but can't
+# 
+
+# These ones use the proper keys, I just had to add them
+
+#increase volume
+"amixer set Master playback 2+ && pkill -RTMIN+10 i3blocks"
+   m:0x0 + c:123
+   XF86AudioRaiseVolume
+
+#decrase volume
+"amixer set Master playback 2- && pkill -RTMIN+10 i3blocks"
+   m:0x0 + c:122
+   XF86AudioLowerVolume
+
+# Toggle mute (old mute button broke)
+"amixer set Master toggle && pkill -RTMIN+10 i3blocks"
+    XF86Launch1
+    
+# mpd pause/play
+"mpc toggle"
+   m:0x0 + c:172
+   XF86AudioPlay
+
+# mpd next
+"mpc next"
+   m:0x0 + c:171
+   XF86AudioNext
+
+# mpd back
+"mpc prev"
+   m:0x0 + c:173
+   XF86AudioPre
+
+#detect other display through VGA
+"xrandr --output VGA1 --auto --same-as LVDS1"
+   m:0x0 + c:235
+   XF86Display
+
+# These bindings use number keys
+
+# exit menu
+"~/bin/dmenu_tools/dexit"
+   m:0x4 + c:10
+   Control + 1
+
+# hybrid sleep/hibernate
+"systemctl hybrid-sleep"
+   m:0x4 + c:11
+   Control + 2
+
+# lock screen
+"slock"
+   m:0x4 + c:12
+   Control + 3
+
+# sleep
+"systemctl suspend"
+   m:0x4 + c:13
+   Control + 4
+
+#search google
+"~/bin/scripts/google_selection"
+    m:0x4 + c:61
+    Control + slash

@@ -18,3 +18,11 @@ vlc/
 xarchiver/
 xfce4/
 xm1/
+bash/bash_history
+feedpage/feedpage.log
+feedpage/homepage.html
+feedpage/homepage.html.backup
+gtk-2.0/gtkfilechooser.ini
+nvim/tmp
+zsh/zcompdump
+zsh/zhistory
