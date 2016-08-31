@@ -1,110 +1,134 @@
-set nocompatible
-set t_Co=16
+" use tpope's sensible.vim to configure basic options.
+
+
+" theme
 colorscheme my_theme_light
-syntax on
-set ttyfast
-set encoding=utf-8
-set showcmd
-set history=50
-set ruler
-set number
-set relativenumber
-" highlight CursorLineNr cterm=None ctermfg=LightGrey ctermbg=None
-set numberwidth=4
-" highlight LineNr cterm=None ctermfg=LightGrey ctermbg=None
+
+
+" use ; for commands.
 nnoremap ; :
-"" save file when switching to other window
-au FocusLost * :wa
-""  something something security exploit
-set modelines=0
-"" saves undo info between sessions
-set undofile
-set backup                        
-set noswapfile                    
-"" save backup and swap stuff in directories
-set undodir=~/.vim/tmp/undo//           " undo files
-set backupdir=~/.vim/tmp/backup//       " backups
-set directory=~/.vim/tmp/swap//         " swap files
-set viminfo+=n~/.vim/tmp/info/viminfo   " viminfo
-" Make those folders automatically if they don't already exist.
-if !isdirectory(expand(&undodir))
-    call mkdir(expand(&undodir), "p")
-endif
-if !isdirectory(expand(&backupdir))
-    call mkdir(expand(&backupdir), "p")
-endif
-if !isdirectory(expand(&directory))
-    call mkdir(expand(&directory), "p")
-endif
-set wrap
-set tabstop=2 shiftwidth=2
-set expandtab
-"" backspace through everything in insert mode
-set backspace=indent,eol,start
-set colorcolumn=81
-" highlight ColorColumn cterm=None ctermbg=LightGrey
-set hlsearch
-set incsearch
-"" searches are case insensitive...
-set ignorecase
-"" ... unless they contain at least one capital letter
-set smartcase
-"" leader
-let mapleader = ","
-"" clear after search
-nnoremap <leader><space> :noh<cr>
-"" disable arrow keys, move between lines with h and l
-nnoremap <up> <nop>
-nnoremap <down> <nop>
-nnoremap <left> <nop>
-nnoremap <right> <nop>
-inoremap <up> <nop>
-inoremap <down> <nop>
-inoremap <left> <nop>
-inoremap <right> <nop>
-nnoremap j gj
-nnoremap k gk
 
-"" disable ex mode, because why?
-map Q <nop>
+" use Q to execute default register, overrides ex mode.
+nnoremap Q @q
 
-"" use mouse
-set mouse=a
+" w!! save a file with sudo even if it was opened without
+cnoremap  w!! w !sudo tee % > /dev/null
 
-"" For all text files set 'textwidth' to 78 characters.
-autocmd FileType text setlocal textwidth=78
+" swap so that 0 goes to first character and ^ goes to start of line
+nnoremap 0 ^
+nnoremap ^ 0
 
-"" Convenient command to see the difference between the current buffer and the
-"" file it was loaded from, thus the changes you made.
-"" Only define it when not defined already.
-if !exists(":DiffOrig")
-  command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
-		  \ | wincmd p | diffthis
-endif
+" make . work with visually selected lines
+vnoremap . :norm.<CR>
 
-"" easier navigation between split windows
-nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-h> <c-w>h
-nnoremap <c-l> <c-w>l
+" ctrl+a in insert mode calls the omnicomplete menu
+inoremap <C-a> <C-x><C-o>
 
-function! ClipboardYank()
-  call system('xclip -i -selection clipboard', @@)
-endfunction
-function! ClipboardPaste()
-  let @@ = system('xclip -o -selection clipboard')
-endfunction
+" ctrl+[hjkl] navigate between split windows with
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-h> <C-w>h
+nnoremap <C-l> <C-w>l
 
-vnoremap <silent> y y:call ClipboardYank()<cr>
-vnoremap <silent> d d:call ClipboardYank()<cr>
-vnoremap <silent> p :call ClipboardPaste()<cr>p
 
-"" Go configs
-"" format with goimports instead of gofmt
-let g:go_fmt_command = "goimports"
+" Leader
+let mapleader = "\<Space>"
 
-" Show syntax highlighting groups for word under cursor
-nmap <C-S-I> :call <SID>SynStack()<CR>
+" Local Leader (used for filetype specific bindings)
+let maplocalleader = "\\"
+
+" Leader+b list buffers
+nmap <Leader>b :ls<CR>:buffer<Space>
+
+" Leader+c close focused window
+nmap <Leader>c <C-w><C-q>
+
+" Leader+[hl] go back/forward in buffer list
+nmap <Leader>h :bprevious<CR>
+
+" Leader+I show syntax highlighting groups for word under cursor
+nmap <Leader>I :call <SID>SynStack()<CR>
+
+" Leader+j format the current paragraph/selection, good for ragged text
+nmap <Leader>j gqip
+vmap <Leader>j gq
+
+" Leader+[hl] go back/forward in buffer list
+nmap <Leader>l :bnext<CR>
+
+" Leader+[py] paste/yank from/to system clipboard
+nnoremap <Leader>p "+p
+nnoremap <Leader>P "+P
+vnoremap <Leader>p "+p
+vnoremap <Leader>P "+P
+
+" Leader+s search and replace
+nmap <Leader>s :%s//g<Left><Left>
+
+" Leader+S clear highlight after search
+nnoremap <silent> <Leader>S :nohlsearch<cr>
+
+" Leader+v vertical split
+noremap <Leader>v :vsplit<CR>
+
+" Leader+[py] paste/yank from/to system clipboard
+vnoremap  <Leader>y  "+y
+nnoremap  <Leader>y  "+y
+
+" Leader+/ clear highlight after search
+nnoremap <silent> <Leader>/ :nohlsearch<cr>
+
+" Leader+Leader switch between current and last buffer
+nmap <Leader><Leader> <c-^>
+
+
+" all the little things
+set showcmd                  " show command in status line as it is composed.
+set showmatch                " highlight matching brackets.
+set showmode                 " show current mode.
+set ruler                    " the line and column numbers of the cursor.
+set number                   " line numbers on the left side.
+set relativenumber           " line numbers relative to cursor position
+set numberwidth=4            " left side number column is 4 characters wide.
+set expandtab                " insert spaces when TAB is pressed.
+set tabstop=2                " render TABs using this many spaces.
+set shiftwidth=2             " indentation amount for < and > commands.
+set noerrorbells             " no beeps.
+set nomodeline               " disable modeline.
+set nojoinspaces             " prevents inserting two spaces on a join (J)
+set ignorecase               " make searching case insensitive...
+set smartcase                " ... unless the query has capital letters.
+set wrap                     " word wrap instead of map by character.
+set colorcolumn=81           " highlight column 81
+set list                     " highlight tabs and trailing spaces
+set listchars=tab:>·,trail:· " symbols to display for tabs and trailing spaces
+set scrolloff=3              " show next 3 lines while scrolling.
+set sidescrolloff=5          " show next 5 columns while side-scrolling.
+set autochdir                " switch to current file's parent directory.
+set splitbelow               " horizontal split opens under active window
+set splitright               " vertical split opens to right of active window
+
+
+" do not use any tmp files
+set noundofile
+set nobackup
+set noswapfile
+
+
+" text file config, text wraps at 80 characters
+autocmd FileType text setlocal textwidth=80
+
+" vim config config, reload vimrc every time buffer is saved
+augroup reload_vimrc " {
+    autocmd!
+    autocmd BufWritePost $MYVIMRC source $MYVIMRC
+augroup END " }
+
+" python config, let python use tabs
+autocmd FileType python setlocal noexpandtab
+
+
+" Vim theme building helper
 function! <SID>SynStack()
   if !exists("*synstack")
     return
@@ -112,13 +136,3 @@ function! <SID>SynStack()
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
 
-"" disabe common movement and delete keys for practice
-"noremap h <NOP>
-"noremap j <NOP>
-"noremap k <NOP>
-"noremap l <NOP>
-"inoremap <BS> <NOP>
-"inoremap <Del> <NOP>
-"noremap <Del> <NOP>
-
-let g:EasyMotion_leader_key = '<Leader>' 
