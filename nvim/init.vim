@@ -1,4 +1,4 @@
-" use vim-plug for plugins
+" plugins
 " :PlugInstall to install, :PlugUpdate to update all, :PlugClean to remove unused
 call plug#begin('~/.config/nvim/plugged')
 
@@ -22,20 +22,75 @@ Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
 
 call plug#end()
 
+
 " theme
 colorscheme my_theme_light
 
-" Leader
-let mapleader = "\<Space>"
-map <Leader> <Plug>(easymotion-prefix)
-" Local Leader (used for filetype specific bindings)
-let maplocalleader = "\\"
 
 " use ; for commands.
 nnoremap ; :
 
 " use Q to execute default register.
 nnoremap Q @q
+
+" w!! save a file with sudo even if it was opened without
+cnoremap  w!! w !sudo tee % > /dev/null
+
+
+" ctrl+a in insert mode calls the omnicomplete menu
+inoremap <C-a> <C-x><C-o>
+
+" ctrl+[hjkl] navigate between split windows with
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+
+
+" Leader
+let mapleader = "\<Space>"
+
+" Local Leader (used for filetype specific bindings)
+let maplocalleader = "\\"
+
+" Leader+b list buffers
+nmap <Leader>b :ls<CR>:buffer<Space>
+
+" Leader+c close focused window
+nmap <Leader>c <C-w><C-q>
+
+" Leader+[hv] horizontal/vertical split
+noremap <Leader>h :split<CR>
+
+" Leader+i show syntax highlighting groups for word under cursor
+nmap <Leader>i :call <SID>SynStack()<CR>
+
+" Leader+[py] paste/yank from/to system clipboard
+nnoremap <Leader>p "+p
+nnoremap <Leader>P "+P
+vnoremap <Leader>p "+p
+vnoremap <Leader>P "+P
+
+" Leader+s search and replace
+nmap <Leader>s :%s//g<Left><Left>
+
+" Leader+t toggle between current and last buffer
+nmap <Leader>t <c-^>
+
+" Leader+[hv] horizontal/vertical split
+noremap <Leader>v :vsplit<CR>
+
+" Leader+[py] paste/yank from/to system clipboard
+vnoremap  <Leader>y  "+y
+nnoremap  <Leader>y  "+y
+
+" Leader+/ clear highlight after search
+nnoremap <Leader>/ :noh<cr>
+
+" Leader+[,.] go back/forward in buffer list (shares the same keys as < and >)
+nmap <Leader>, :bprevious<CR>
+nmap <Leader>. :bnext<CR>
+
 
 " all the little things
 set showcmd             " show command in status line as it is composed.
@@ -61,53 +116,6 @@ set scrolloff=3         " show next 3 lines while scrolling.
 set sidescrolloff=5     " show next 5 columns while side-scrolling.
 set autochdir           " switch to current file's parent directory.
 
-" ctrl+[hjkl] navigate between split windows with
-nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-h> <c-w>h
-nnoremap <c-l> <c-w>l
-
-" Leader+/ clear highlight after search
-nnoremap <Leader>/ :noh<cr>
-
-" Leader+y copy to system clipboard
-vnoremap  <Leader>y  "+y
-nnoremap  <Leader>y  "+y
-
-" Leader+p paste from system clipboard
-nnoremap <Leader>p "+p
-nnoremap <Leader>P "+P
-vnoremap <Leader>p "+p
-vnoremap <Leader>P "+P
-
-" Leader+[hl] go back/forward in buffer list
-nmap <Leader>h :bprevious<CR>
-nmap <Leader>l :bnext<CR>
-
-" Leader+s search and replace
-nmap <Leader>s :%s//g<Left><Left>
-
-" Leader+b list buffers
-nmap <Leader>b :ls<CR>:buffer<Space>
-
-" Leader+t toggle between current and last buffer
-nmap <Leader>t <c-^>
-
-" Leader+i show syntax highlighting groups for word under cursor
-nmap <Leader>i :call <SID>SynStack()<CR>
-
-" ctrl+a in insert mode calls the omnicomplete menu
-inoremap <C-a> <C-x><C-o>
-
-" w!! save a file with sudo even if it was opened without
-cnoremap  w!! w !sudo tee % > /dev/null
-
-" Leader+c close focused window
-nmap <Leader>c <C-w><C-q>
-
-" Leader+[hv] horizontal/vertical split
-noremap <Leader>h :split<CR>
-noremap <Leader>v :vsplit<CR>
 
 " manage meta files by keeping them all under .config/nvim/tmp/
 set undofile  " keep undo history persistent
@@ -129,12 +137,14 @@ if !isdirectory(expand(&directory))
     call mkdir(expand(&directory), "p")
 endif
 
+
 " text file config
 autocmd FileType text setlocal textwidth=80
 
 " OCaml config
 let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
 execute "set rtp+=" . g:opamshare . "/merlin/vim"
+
 
 " Vim theme building helper
 function! <SID>SynStack()
