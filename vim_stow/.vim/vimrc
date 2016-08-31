@@ -125,9 +125,6 @@ augroup reload_vimrc " {
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END " }
 
-" python config, let python use tabs
-autocmd FileType python setlocal noexpandtab
-
 
 " Vim theme building helper
 function! <SID>SynStack()

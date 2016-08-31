@@ -169,9 +169,6 @@ augroup END " }
 let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
 execute "set rtp+=" . g:opamshare . "/merlin/vim"
 
-" python config, let python use tabs
-autocmd FileType python setlocal noexpandtab
-
 
 " Vim theme building helper
 function! <SID>SynStack()
