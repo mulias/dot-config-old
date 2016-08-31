@@ -52,9 +52,13 @@ URxvt.scrollBar: false
 URxvt.font:xft:Inconsolata-dz for Powerline:pixelsize=17:antialias=true
 URxvt.letterSpace: -1
 URxvt.saveLines: 1000
-URxvt.perl-ext-common:  default,matcher,tabbedex,clipboard
+URxvt.perl-ext-common:  default,matcher,tabbedex,clipboard,font-size
 URxvt.url-launcher:     /usr/bin/firefox
 URxvt.matcher.button:   1
+
+! disable symbol insertion with ctrl+shift
+URxvt.iso14755: false
+URxvt.iso14755_52: false
 
 URxvt.tabbed.tabbar-fg: 15
 URxvt.tabbed.tabbar-bg:  7
@@ -63,3 +67,6 @@ URxvt.tabbed.tab-bg:     7
 URxvt.tabbed.title-fg:   7
 URxvt.tabbed.title-bg:   7
 
+URxvt.keysym.C-plus:    font-size:increase
+URxvt.keysym.C-minus:   font-size:decrease
+URxvt.keysym.C-equal:   font-size:reset
