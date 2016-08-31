@@ -153,6 +153,19 @@ alias topdown="vlc -f ~/Videos/Elephant\ \&\ Giraffe\ Ridin\'\ with\ Their\ Top\
 alias starwars='telnet towel.blinkenlights.nl'
 alias infinicows='n=32; cow=$(cowsay "moo"); for i in $(seq $n); do cow=$(echo "$cow" | cowsay -n); done; echo "$cow"'
 
+# if a program is currently backgrounded, ctrl-z will foreground that program
+fancy-ctrl-z () {
+  if [[ $#BUFFER -eq 0 ]]; then
+    BUFFER="fg"
+    zle accept-line
+  else
+    zle push-input
+    zle clear-screen
+  fi
+}
+zle -N fancy-ctrl-z
+bindkey '^Z' fancy-ctrl-z
+
 ## source 
 # source custome completion scripts
 source ~/bin/scripts/note_completion
