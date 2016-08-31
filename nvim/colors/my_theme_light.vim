@@ -43,7 +43,7 @@ hi clear
 if exists("syntax_on")
     syntax reset
 endif
-let g:colors_name="in_progress"
+let g:colors_name="my_theme_light"
 
 """ Syntax groups
 "         group              fg             bg

@@ -1,6 +1,6 @@
 set nocompatible
 set t_Co=16
-colorscheme in_progress
+colorscheme my_theme_light
 syntax on
 set ttyfast
 set encoding=utf-8

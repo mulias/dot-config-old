@@ -1,26 +1,118 @@
-set nocompatible
-set t_Co=16
-colorscheme in_progress
-syntax on
-set ttyfast
-set encoding=utf-8
-set showcmd
-set history=50
-set ruler
-set number
-set relativenumber
-" highlight CursorLineNr cterm=None ctermfg=LightGrey ctermbg=None
-set numberwidth=4
-" highlight LineNr cterm=None ctermfg=LightGrey ctermbg=None
+" use vim-plug for plugins
+" :PlugInstall to install, :PlugUpdate to update all, :PlugClean to remove unused
+call plug#begin('~/.config/nvim/plugged')
+
+" simple file browser
+" defaults bind Leader+f to open file browser
+Plug 'jeetsukumaran/vim-filebeagle'
+
+" manipulate surrounding pairs
+Plug 'tpope/vim-surround'
+
+" fast file navigation, activate with leader+leader
+Plug 'easymotion/vim-easymotion'
+
+" runs a linter and reports errors on file save
+Plug 'scrooloose/syntastic'
+let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
+let g:syntastic_ocaml_checkers = ['rubylint']  " Ruby linter is ruby-lint
+
+" indents ocaml files, ocp-indent is installed with opam
+Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
+
+call plug#end()
+
+" theme
+colorscheme my_theme_light
+
+" Leader
+let mapleader = "\<Space>"
+map <Leader> <Plug>(easymotion-prefix)
+" Local Leader (used for filetype specific bindings)
+let maplocalleader = "\\"
+
+" use ; for commands.
 nnoremap ; :
-"" save file when switching to other window
-au FocusLost * :wa
-""  something something security exploit
-set modelines=0
-"" saves undo info between sessions
-set undofile
-set backup                        
-set noswapfile                    
+
+" use Q to execute default register.
+nnoremap Q @q
+
+" all the little things
+set showcmd             " show command in status line as it is composed.
+set showmatch           " highlight matching brackets.
+set showmode            " show current mode.
+set ruler               " the line and column numbers of the cursor.
+set number              " line numbers on the left side.
+set relativenumber      " line number of current line, all other numbers relative
+set numberwidth=4       " left side number column is 4 characters wide.
+set expandtab           " insert spaces when TAB is pressed.
+set tabstop=2           " render TABs using this many spaces.
+set shiftwidth=2        " indentation amount for < and > commands.
+set noerrorbells        " no beeps.
+set nomodeline          " disable modeline.
+set nojoinspaces        " prevents inserting two spaces on a join (J)
+set ignorecase          " make searching case insensitive...
+set smartcase           " ... unless the query has capital letters.
+set wrap                " word wrap instead of map by character.
+set colorcolumn=81      " highlight column 81
+set list                " highlight tabs and trailing spaces
+set listchars=tab:>·,trail:· " symbols to display for tabs and trailing spaces
+set scrolloff=3         " show next 3 lines while scrolling.
+set sidescrolloff=5     " show next 5 columns while side-scrolling.
+set autochdir           " switch to current file's parent directory.
+
+" ctrl+[hjkl] navigate between split windows with
+nnoremap <c-j> <c-w>j
+nnoremap <c-k> <c-w>k
+nnoremap <c-h> <c-w>h
+nnoremap <c-l> <c-w>l
+
+" Leader+/ clear highlight after search
+nnoremap <Leader>/ :noh<cr>
+
+" Leader+y copy to system clipboard
+vnoremap  <Leader>y  "+y
+nnoremap  <Leader>y  "+y
+
+" Leader+p paste from system clipboard
+nnoremap <Leader>p "+p
+nnoremap <Leader>P "+P
+vnoremap <Leader>p "+p
+vnoremap <Leader>P "+P
+
+" Leader+[hl] go back/forward in buffer list
+nmap <Leader>h :bprevious<CR>
+nmap <Leader>l :bnext<CR>
+
+" Leader+s search and replace
+nmap <Leader>s :%s//g<Left><Left>
+
+" Leader+b list buffers
+nmap <Leader>b :ls<CR>:buffer<Space>
+
+" Leader+t toggle between current and last buffer
+nmap <Leader>t <c-^>
+
+" Leader+i show syntax highlighting groups for word under cursor
+nmap <Leader>i :call <SID>SynStack()<CR>
+
+" ctrl+a in insert mode calls the omnicomplete menu
+inoremap <C-a> <C-x><C-o>
+
+" w!! save a file with sudo even if it was opened without
+cnoremap  w!! w !sudo tee % > /dev/null
+
+" Leader+c close focused window
+nmap <Leader>c <C-w><C-q>
+
+" Leader+[hv] horizontal/vertical split
+noremap <Leader>h :split<CR>
+noremap <Leader>v :vsplit<CR>
+
+" manage meta files by keeping them all under .config/nvim/tmp/
+set undofile  " keep undo history persistent
+set backup    " backup all files
+set swapfile  " save buffers periodically
 "" save backup and swap stuff in directories
 set undodir=~/.config/nvim/tmp/undo//           " undo files
 set backupdir=~/.config/nvim/tmp/backup//       " backups
@@ -36,75 +128,15 @@ endif
 if !isdirectory(expand(&directory))
     call mkdir(expand(&directory), "p")
 endif
-set wrap
-set tabstop=2 shiftwidth=2
-set expandtab
-"" backspace through everything in insert mode
-set backspace=indent,eol,start
-set colorcolumn=81
-" highlight ColorColumn cterm=None ctermbg=LightGrey
-set hlsearch
-set incsearch
-"" searches are case insensitive...
-set ignorecase
-"" ... unless they contain at least one capital letter
-set smartcase
-"" leader
-let mapleader = ","
-"" clear after search
-nnoremap <leader><space> :noh<cr>
-"" disable arrow keys, move between lines with h and l
-nnoremap <up> <nop>
-nnoremap <down> <nop>
-nnoremap <left> <nop>
-nnoremap <right> <nop>
-inoremap <up> <nop>
-inoremap <down> <nop>
-inoremap <left> <nop>
-inoremap <right> <nop>
-nnoremap j gj
-nnoremap k gk
 
-"" disable ex mode, because why?
-map Q <nop>
+" text file config
+autocmd FileType text setlocal textwidth=80
 
-"" use mouse
-set mouse=a
+" OCaml config
+let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
+execute "set rtp+=" . g:opamshare . "/merlin/vim"
 
-"" For all text files set 'textwidth' to 78 characters.
-autocmd FileType text setlocal textwidth=78
-
-"" Convenient command to see the difference between the current buffer and the
-"" file it was loaded from, thus the changes you made.
-"" Only define it when not defined already.
-if !exists(":DiffOrig")
-  command DiffOrig vert new | set bt=nofile | r ++edit # | 0d_ | diffthis
-		  \ | wincmd p | diffthis
-endif
-
-"" easier navigation between split windows
-nnoremap <c-j> <c-w>j
-nnoremap <c-k> <c-w>k
-nnoremap <c-h> <c-w>h
-nnoremap <c-l> <c-w>l
-
-function! ClipboardYank()
-  call system('xclip -i -selection clipboard', @@)
-endfunction
-function! ClipboardPaste()
-  let @@ = system('xclip -o -selection clipboard')
-endfunction
-
-vnoremap <silent> y y:call ClipboardYank()<cr>
-vnoremap <silent> d d:call ClipboardYank()<cr>
-vnoremap <silent> p :call ClipboardPaste()<cr>p
-
-"" Go configs
-"" format with goimports instead of gofmt
-let g:go_fmt_command = "goimports"
-
-" Show syntax highlighting groups for word under cursor
-nmap <C-S-I> :call <SID>SynStack()<CR>
+" Vim theme building helper
 function! <SID>SynStack()
   if !exists("*synstack")
     return
@@ -112,13 +144,3 @@ function! <SID>SynStack()
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
 
-"" disabe common movement and delete keys for practice
-"noremap h <NOP>
-"noremap j <NOP>
-"noremap k <NOP>
-"noremap l <NOP>
-"inoremap <BS> <NOP>
-"inoremap <Del> <NOP>
-"noremap <Del> <NOP>
-
-let g:EasyMotion_leader_key = '<Leader>' 
