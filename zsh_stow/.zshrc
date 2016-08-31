@@ -25,7 +25,7 @@ export PATH
 export LESSHISTFILE=/dev/null
 
 # default programs
-export EDITOR=vim
+export EDITOR=nvim
 export PAGER=less
 export BROWSER=firefox
 
@@ -122,6 +122,7 @@ alias acpi='sudo tpacpi-bat_info'
 alias vim='nvim'
 alias skype='apulse32 skype'
 # regular use
+alias vimdark='nvim -c "colorscheme darkblue"'
 alias apps='pcmanfm menu://applications/'
 alias wallpaper='feh -. ~/Pictures/Wallpaper'
 alias mathlan='ssh mulhalle@www.cs.grinnell.edu'
