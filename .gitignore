@@ -1,3 +1,13 @@
+.exercism.json
+QtProject.conf
+anjuta/
+calibre/
+chromium/
+feedpage/feedpage.pid
+google-googletalkplugin/
+nvim/.netrwhist
+nvim/autoload/
+nvim/plugged/
 Kitware/
 Skype/
 Trolltech.conf
