@@ -1,4 +1,5 @@
-" plugins
+"""""
+" Plugins
 " :PlugInstall to install, :PlugUpdate to update all, :PlugClean to remove unused
 call plug#begin('~/.config/nvim/plugged')
 
@@ -7,16 +8,26 @@ call plug#begin('~/.config/nvim/plugged')
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 
+" comment/uncomment with gcc
+Plug 'tpope/vim-commentary'
+
 " manipulate surrounding pairs
 Plug 'tpope/vim-surround'
 
 " smart select a region of text
 Plug 'terryma/vim-expand-region'
 
+" jump to next occurrence of two consecutive characters
+Plug 'justinmk/vim-sneak'
+hi link SneakPluginTarget Search
+hi link SneakPluginScope Search
+let g:sneak#s_next = 1
+let g:sneak#absolute_dir = 1
+
 " runs a linter and reports errors on file save
 Plug 'scrooloose/syntastic'
 let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
-let g:syntastic_ocaml_checkers = ['rubylint']  " Ruby linter is ruby-lint
+let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
 
 " indents ocaml files, ocp-indent is installed with opam
 Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
@@ -24,12 +35,18 @@ Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
 call plug#end()
 
 
-" theme
+"""""
+" Theme
 colorscheme my_theme_light
 
 
-" use ; for commands.
+"""""
+" Key Remappings
+" use ; for commands, ' to repeat movement
 nnoremap ; :
+vnoremap ; :
+nnoremap ' ;
+vnoremap ' ;
 
 " use Q to execute default register, overrides ex mode.
 nnoremap Q @q
@@ -37,14 +54,21 @@ nnoremap Q @q
 " w!! save a file with sudo even if it was opened without
 cnoremap  w!! w !sudo tee % > /dev/null
 
-" swap so that 0 goes to first character and ^ goes to start of line
+" 0 goes to first character and ^ goes to start of line
 nnoremap 0 ^
 nnoremap ^ 0
 
 " make . work with visually selected lines
 vnoremap . :norm.<CR>
 
-" ctrl+a in insert mode calls the omnicomplete menu
+" v for visual mode with region expand functionality, ctrl+v to shrink region
+vmap v <Plug>(expand_region_expand)
+vmap <C-v> <Plug>(expand_region_shrink)
+
+
+"""""
+" Ctrl Bindings
+" ctrl+a from insert mode call the omnicomplete menu
 inoremap <C-a> <C-x><C-o>
 
 " ctrl+[hjkl] navigate between split windows with
@@ -53,11 +77,12 @@ nnoremap <C-k> <C-w>k
 nnoremap <C-h> <C-w>h
 nnoremap <C-l> <C-w>l
 
-" v for visual mode with region expand functionality, ctrl+v to shrink region
-vmap v <Plug>(expand_region_expand)
-vmap <C-v> <Plug>(expand_region_shrink)
+" ctrl+s toggle spellcheck for comments
+nnoremap <C-s> :setlocal invspell<CR>
 
 
+"""""
+" Leader Bindings
 " Leader
 let mapleader = "\<Space>"
 
@@ -91,6 +116,9 @@ nnoremap <Leader>P "+P
 vnoremap <Leader>p "+p
 vnoremap <Leader>P "+P
 
+" Leader+r rot13 file
+noremap <Leader>r ggg?G
+
 " Leader+s search and replace
 nmap <Leader>s :%s//g<Left><Left>
 
@@ -107,8 +135,12 @@ nnoremap <silent> <Leader>/ :nohlsearch<cr>
 " Leader+Leader switch between current and last buffer
 nmap <Leader><Leader> <c-^>
 
+" Local Leader+p, TODO: set for only ocaml
+nmap <silent> <LocalLeader>a :call <SID>OCamlTypePaste()<CR>
 
-" all the little things
+
+"""""
+" All the Little Things
 set showcmd                  " show command in status line as it is composed.
 set showmatch                " highlight matching brackets.
 set showmode                 " show current mode.
@@ -135,6 +167,8 @@ set splitbelow               " horizontal split opens under active window
 set splitright               " vertical split opens to right of active window
 
 
+"""""
+" Vim Metadata
 " manage meta files by keeping them all under .config/nvim/tmp/
 set undofile  " keep undo history persistent
 set backup    " backup all files
@@ -156,6 +190,8 @@ if !isdirectory(expand(&directory))
 endif
 
 
+"""""
+" Filetype Settings
 " text file config, text wraps at 80 characters
 autocmd FileType text setlocal textwidth=80
 
@@ -169,6 +205,17 @@ augroup END " }
 let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
 execute "set rtp+=" . g:opamshare . "/merlin/vim"
 
+
+"""""
+" Functions
+" OCaml type sig paste
+function! <SID>OCamlTypePaste()
+  redir => res
+  silent call merlin#TypeOf()
+  redir END
+  let res = "(* " . substitute(res, '^\n\+', '', '') . " *)"
+  silent put=res
+endfunc
 
 " Vim theme building helper
 function! <SID>SynStack()
