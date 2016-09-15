@@ -28,9 +28,14 @@ let g:sneak#absolute_dir = 1
 Plug 'scrooloose/syntastic'
 let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
 let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
+let g:syntastic_elixir_checkers = ['elixir']  " Elixir default checker
+let g:syntastic_enable_elixir_checker = 1     " override elixir security
 
 " indents ocaml files, ocp-indent is installed with opam
 Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
+
+" elixir highlighting and indentation
+Plug 'elixir-lang/vim-elixir'
 
 call plug#end()
 
