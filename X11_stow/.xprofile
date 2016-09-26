@@ -1,4 +1,7 @@
-#! /bin/bash
+
+if which dbus-launch >/dev/null && test -z "$DBUS_SESSION_BUS_ADDRESS"; then
+    eval "$(dbus-launch --sh-syntax --exit-with-session)"
+fi
 
 export XDG_CONFIG_HOME="$HOME"/.config
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc-2.0
@@ -8,9 +11,3 @@ xrdb -merge ~/.config/X11/Xresources &         # update xresources
 xset b off                                     # no beep
 xcape -e '#66=Escape' &                        # tapping capslock=escape
 xmodmap ~/.config/X11/Xmodmap                  # holding capslock=meta
-
-DEFAULT_SESSION=xfce4-session
-case $1 in
-  xfce) exec dbus-launch xfce4-session ;;
-  *) exec dbus-launch  $DEFAULT_SESSION ;;
-esac
