@@ -35,3 +35,11 @@ gtk-2.0/gtkfilechooser.ini
 nvim/tmp
 zsh/zcompdump
 zsh/zhistory
+Mousepad/
+Thunar/
+autostart/
+manjaro/
+nvim/autoload/plug.vim.old
+pulse/
+qt5ct/
+volumeicon/
