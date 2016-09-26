@@ -4,20 +4,10 @@
 #
 ###
 
-export XDG_CONFIG_HOME="$HOME"/.config
-export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc-2.0
-export GTK_RC_FILES="$XDG_CONFIG_HOME"/gtk-1.0/gtkrc-1.0
-
-## set paths
-export GOPATH=~/.go
 # set path
 typeset -U path
-path=(~/bin/dmenu_tools
-      ~/bin/dmenu_music
-      ~/bin/scripts
-      ~/bin/feedpage
+path=(~/bin/scripts
       $(ruby -rubygems -e 'puts Gem.user_dir')/bin
-      $GOPATH/bin
       $path)
 export PATH
 
@@ -72,11 +62,6 @@ setopt share_history
 # search related history
 [[ -n "${key[Up]}"   ]]  && bindkey  "${key[Up]}"    history-beginning-search-backward
 [[ -n "${key[Down]}" ]]  && bindkey  "${key[Down]}"  history-beginning-search-forward
-bindkey '^k' up-history
-bindkey '^j' down-history
-bindkey -M vicmd 'k' history-beginning-search-backward
-bindkey -M vicmd 'j' history-beginning-search-forward
-
 
 ## command input
 # no beep
@@ -87,8 +72,6 @@ setopt completealiases
 zstyle :compinstall filename "$HOME/.zshrc"
 autoload -U +X compinit && compinit -d ${COMPDUMPFILE}
 autoload -U +X bashcompinit && bashcompinit
-# search for unknown commands
-source /usr/share/doc/pkgfile/command-not-found.zsh
 
 
 ## directory stack
@@ -113,45 +96,9 @@ RPROMPT="%*"
 
 
 ## aliases
-# monkey patching
-alias ls='lsdasha'
 alias pacman='sudo pacman'
-alias medit='medit 2> /dev/null'
-alias top='htop'
-alias acpi='sudo tpacpi-bat_info'
 alias vim='nvim'
-alias skype='apulse32 skype'
-# regular use
 alias vimdark='nvim -c "colorscheme darkblue"'
-alias apps='pcmanfm menu://applications/'
-alias wallpaper='feh -. ~/Pictures/Wallpaper'
-alias mathlan='ssh mulhalle@www.cs.grinnell.edu'
-alias todo='note todo'
-alias vimf='nvim $(fzf)'
-# switch between config files to tell skype what kind of mic I have
-alias builtinmic='cp ~/.asoundrc /tmp/asoundrc.tmp && mv ~/.asoundrc.builtin ~/.asoundrc && mv /tmp/asoundrc.tmp ~/.asoundrc.usbmic'
-alias usbmic='cp ~/.asoundrc /tmp/asoundrc.tmp && mv ~/.asoundrc.usbmic ~/.asoundrc && mv /tmp/asoundrc.tmp ~/.asoundrc.builtin'
-# sometimes flashplayer breaks if it is updated while firefox is running
-# remove currupted pluginreg.dat and everything should be fine
-alias fixflash='killall firefox; rm ~/.mozilla/firefox/*/pluginreg.dat'
-# hypothetically useful
-alias terminal='urxvtc'
-alias projector='xrandr --output VGA1 --auto --left-of LVDS1;xset s off'
-alias fromclip='xclip -out -selection clipboard | xclip'
-alias toclip='xclip -out | xclip -selection clipboard'
-alias batmin='sudo tpacpi-bat -s ST 1'
-alias batmax='sudo tpacpi-bat -s SP 1'
-alias batdischarge='sudo tpacpi-bat -s FD 1'
-alias batinhibit='sudo tpacpi-bat -s IC 1'
-alias diskspace='df -h'
-alias webcam='vlc v4l:// :v4l-vdev="/dev/video0" :v4l-adev="/dev/audio2"'
-alias lanshare='echo http://$(ifconfig | grep -A1 wlp3s0 | awk "/inet/{ print \$2 }"):8000 ; ruby -e "require\"webrick\";w=WEBrick::HTTPServer.new(:Port=>8000,:DocumentRoot=>Dir::pwd);Signal.trap(2){w.shutdown};w.start"'
-alarm () { sleep $*; mpv --loop=inf /usr/share/sounds/freedesktop/stereo/complete.oga }
-# paramount importance
-alias salsamixer='alsamixer'
-alias topdown="vlc -f ~/Videos/Elephant\ \&\ Giraffe\ Ridin\'\ with\ Their\ Top\ Down.mp4"
-alias starwars='telnet towel.blinkenlights.nl'
-alias infinicows='n=32; cow=$(cowsay "moo"); for i in $(seq $n); do cow=$(echo "$cow" | cowsay -n); done; echo "$cow"'
 
 # if a program is currently backgrounded, ctrl-z will foreground that program
 fancy-ctrl-z () {
@@ -168,11 +115,4 @@ bindkey '^Z' fancy-ctrl-z
 
 ## source 
 # source custome completion scripts
-source ~/bin/scripts/note_completion
-
-## OPAM configuration
-# used by opam to automagically add ocaml packages to path 
-. /home/eli/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
-
-# rbenv config
-eval "$(rbenv init -)"
+#source ~/bin/scripts/note_completion
