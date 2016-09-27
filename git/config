@@ -2,7 +2,7 @@
     path=~/.gitconfig-local
     
 [core]
-	editor = vim
+	editor = nvim
 	excludesfile = /home/eli/.gitignore_global
 	
 [credential]
@@ -12,5 +12,5 @@
 [alias]
 	unadd = reset HEAD
 [user]
-	email = eli.mulhall@gmail.com
+	email = elias@mojotech.com
 	name = Elias Mulhall
