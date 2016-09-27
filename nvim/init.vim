@@ -25,17 +25,17 @@ let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
 
 " runs a linter and reports errors on file save
-Plug 'scrooloose/syntastic'
-let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
-let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
-let g:syntastic_elixir_checkers = ['elixir']  " Elixir default checker
-let g:syntastic_enable_elixir_checker = 1     " override elixir security
+"Plug 'scrooloose/syntastic'
+"let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
+"let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
+"let g:syntastic_elixir_checkers = ['elixir']  " Elixir default checker
+"let g:syntastic_enable_elixir_checker = 1     " override elixir security
 
 " indents ocaml files, ocp-indent is installed with opam
-Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
+"Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
 
 " elixir highlighting and indentation
-Plug 'elixir-lang/vim-elixir'
+"Plug 'elixir-lang/vim-elixir'
 
 call plug#end()
 
@@ -207,20 +207,20 @@ augroup reload_vimrc " {
 augroup END " }
 
 " OCaml config, use correct version of merlin
-let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
-execute "set rtp+=" . g:opamshare . "/merlin/vim"
+" let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
+" execute "set rtp+=" . g:opamshare . "/merlin/vim"
 
 
 """""
 " Functions
 " OCaml type sig paste
-function! <SID>OCamlTypePaste()
-  redir => res
-  silent call merlin#TypeOf()
-  redir END
-  let res = "(* " . substitute(res, '^\n\+', '', '') . " *)"
-  silent put=res
-endfunc
+"function! <SID>OCamlTypePaste()
+"  redir => res
+"  silent call merlin#TypeOf()
+"  redir END
+"  let res = "(* " . substitute(res, '^\n\+', '', '') . " *)"
+"  silent put=res
+"endfunc
 
 " Vim theme building helper
 function! <SID>SynStack()
