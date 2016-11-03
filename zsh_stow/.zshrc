@@ -7,9 +7,14 @@
 # set path
 typeset -U path
 path=(~/bin/scripts
-      $(ruby -rubygems -e 'puts Gem.user_dir')/bin
+      ~/.rvm/bin
       $path)
 export PATH
+
+# RVM nonsense
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
+
+export RAILS_ENV="development"
 
 # disable less useless logging
 export LESSHISTFILE=/dev/null
@@ -90,9 +95,21 @@ setopt autopushd pushdsilent pushdtohome pushdignoredups pushdminus
 ## prompt
 # display exit statis if last command was not a success
 # display directory and time on the right
+autoload -Uz vcs_info
+precmd () { vcs_info; rbv=$($HOME/.rvm/bin/rvm-prompt) }
+setopt prompt_subst
+zstyle ':vcs_info:*' enable git
+zstyle ':vcs_info:git*' formats "[%b]"
+
+function prompt_rvm {
+  rbv=$($HOME/.rvm/bin/rvm-prompt)
+    rbv=${rbv#ruby-}
+    echo $rbv
+}
+
 PROMPT="%(?..[return %?]
 ) %~ > "
-RPROMPT="%*"
+RPROMPT='${vcs_info_msg_0_}[${rbv}][%*]'
 
 
 ## aliases
@@ -112,7 +129,3 @@ fancy-ctrl-z () {
 }
 zle -N fancy-ctrl-z
 bindkey '^Z' fancy-ctrl-z
-
-## source 
-# source custome completion scripts
-#source ~/bin/scripts/note_completion

@@ -3,14 +3,18 @@
     
 [core]
 	editor = nvim
-	excludesfile = /home/eli/.gitignore_global
-	
+	excludesfile = ~/.config/git/ignore
+	mergeoptions = --no-ff --no-commit
+
 [credential]
-	helper = cache --timeout=3600
+	helper = cache --timeout=28800
+
 [push]
 	default = simple
+
 [alias]
 	unadd = reset HEAD
+
 [user]
 	email = elias@mojotech.com
 	name = Elias Mulhall

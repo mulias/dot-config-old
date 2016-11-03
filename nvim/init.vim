@@ -4,18 +4,25 @@
 call plug#begin('~/.config/nvim/plugged')
 
 " simple file browser
-" defaults bind Leader+f to open file browser
+" open file browser with -
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 
+" smart commenting
 " comment/uncomment with gcc
 Plug 'tpope/vim-commentary'
 
 " manipulate surrounding pairs
+" cs to change a surround, ys to add a new surround
 Plug 'tpope/vim-surround'
 
 " smart select a region of text
+" repeat v to expand region
 Plug 'terryma/vim-expand-region'
+
+" repeat f and t easily
+" use f/F/t/T to repeat last f/t action
+Plug 'rhysd/clever-f.vim'
 
 " jump to next occurrence of two consecutive characters
 Plug 'justinmk/vim-sneak'
@@ -24,18 +31,39 @@ hi link SneakPluginScope Search
 let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
 
-" runs a linter and reports errors on file save
-"Plug 'scrooloose/syntastic'
-"let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
-"let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
-"let g:syntastic_elixir_checkers = ['elixir']  " Elixir default checker
-"let g:syntastic_enable_elixir_checker = 1     " override elixir security
+" git integration
+" commands all start with :G
+Plug 'tpope/vim-fugitive'
 
-" indents ocaml files, ocp-indent is installed with opam
-"Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
+" unix file managment integration
+Plug 'tpope/vim-eunuch'
+
+" better in-buffer search defaults
+Plug 'junegunn/vim-slash'
+
+" fuzzy find lots of things
+Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
+Plug 'junegunn/fzf.vim'
+
+" end syntax structures automatically
+Plug 'tpope/vim-endwise'
+
+" ruby fun
+Plug 'tpope/vim-rails'
+Plug 'vim-ruby/vim-ruby'
+
+" runs a linter and reports errors on file save
+Plug 'scrooloose/syntastic'
+let g:syntastic_ruby_checkers = ['rubocop']
+let g:syntastic_ruby_rubocop_args = "-c .rubocop_ci.yml"
+let g:syntastic_elixir_checkers = ['elixir']
+let g:syntastic_enable_elixir_checker = 1     " override elixir security
 
 " elixir highlighting and indentation
-"Plug 'elixir-lang/vim-elixir'
+Plug 'elixir-lang/vim-elixir'
+
+" slim highlighting
+Plug 'slim-template/vim-slim'
 
 call plug#end()
 
@@ -70,6 +98,11 @@ vnoremap . :norm.<CR>
 vmap v <Plug>(expand_region_expand)
 vmap <C-v> <Plug>(expand_region_shrink)
 
+"""""
+" Alt Bindings
+" alt+[hl] go back/forward in buffer list
+nnoremap <A-h> :bprevious<CR>
+nnoremap <A-l> :bnext<CR>
 
 """""
 " Ctrl Bindings
@@ -94,11 +127,20 @@ let mapleader = "\<Space>"
 " Local Leader (used for filetype specific bindings)
 let maplocalleader = "\\"
 
+" Leader+a open Ack
+nmap <Leader>a :Ack!<Space>
+
 " Leader+b list buffers
 nmap <Leader>b :ls<CR>:buffer<Space>
 
 " Leader+c close focused window
 nmap <Leader>c <C-w><C-q>
+
+" Leader+d delete this buffer from buffer list, keep split
+nmap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
+
+" Leader+e edit file in same dir as current file
+nmap <Leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
 
 " Leader+f open filebeagle
 
@@ -138,10 +180,21 @@ nnoremap  <Leader>y  "+y
 nnoremap <silent> <Leader>/ :nohlsearch<cr>
 
 " Leader+Leader switch between current and last buffer
-nmap <Leader><Leader> <c-^>
+" nmap <Leader><Leader> <c-^>
 
 " Local Leader+p, TODO: set for only ocaml
 nmap <silent> <LocalLeader>a :call <SID>OCamlTypePaste()<CR>
+
+" Fuzzy finder
+nnoremap <silent> <Leader><Leader>f :GFiles<CR>
+nnoremap <silent> <Leader><Leader>w :GFiles?<CR>
+nnoremap <silent> <Leader><Leader>b :Buffers<CR>
+nnoremap <silent> <Leader><Leader>a :Ag<CR>
+nnoremap <silent> <Leader><Leader>l :Lines<CR>
+nnoremap <silent> <Leader><Leader>h :History<CR>
+nnoremap <silent> <Leader><Leader>c :History:<CR>
+nnoremap <silent> <Leader><Leader>s :History/<CR>
+nnoremap <silent> <Leader><Leader>g :Commits<CR>
 
 
 """""
@@ -151,7 +204,6 @@ set showmatch                " highlight matching brackets.
 set showmode                 " show current mode.
 set ruler                    " the line and column numbers of the cursor.
 set number                   " line numbers on the left side.
-set relativenumber           " line numbers relative to cursor position
 set numberwidth=4            " left side number column is 4 characters wide.
 set expandtab                " insert spaces when TAB is pressed.
 set tabstop=2                " render TABs using this many spaces.
@@ -167,10 +219,11 @@ set list                     " highlight tabs and trailing spaces
 set listchars=tab:>·,trail:· " symbols to display for tabs and trailing spaces
 set scrolloff=3              " show next 3 lines while scrolling.
 set sidescrolloff=5          " show next 5 columns while side-scrolling.
-set autochdir                " switch to current file's parent directory.
 set splitbelow               " horizontal split opens under active window
 set splitright               " vertical split opens to right of active window
-
+set shortmess+=I             " Don't show the intro
+set autowrite                " auto write file when switching buffer
+set clipboard=unnamedplus    " write to vim and system clipboards
 
 """""
 " Vim Metadata
@@ -221,6 +274,16 @@ augroup END " }
 "  let res = "(* " . substitute(res, '^\n\+', '', '') . " *)"
 "  silent put=res
 "endfunc
+
+" dump list of open buffers
+function! <SID>DumpBuffers()
+  redir => res
+  silent buffers
+  redir END
+  silent put=res
+endfunc
+
+command! Bufdump call <SID>DumpBuffers()
 
 " Vim theme building helper
 function! <SID>SynStack()
