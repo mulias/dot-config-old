@@ -4,32 +4,58 @@
 call plug#begin('~/.config/nvim/plugged')
 
 " simple file browser
-" defaults bind Leader+f to open file browser
+" open file browser with -
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 
+" smart commenting
 " comment/uncomment with gcc
 Plug 'tpope/vim-commentary'
 
 " manipulate surrounding pairs
+" cs to change a surround, ys to add a new surround
 Plug 'tpope/vim-surround'
 
 " smart select a region of text
+" repeat v to expand region
 Plug 'terryma/vim-expand-region'
 
+" repeat f and t easily
+" use f/F/t/T to repeat last f/t action
+Plug 'rhysd/clever-f.vim'
+
 " jump to next occurrence of two consecutive characters
+" s to start, s again to repeat
 Plug 'justinmk/vim-sneak'
 hi link SneakPluginTarget Search
 hi link SneakPluginScope Search
 let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
 
+" git integration
+" commands all start with :G
+Plug 'tpope/vim-fugitive'
+
+" unix file managment integration
+Plug 'tpope/vim-eunuch'
+
+" better in-buffer search defaults
+Plug 'junegunn/vim-slash'
+
+" fuzzy find lots of things
+Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
+Plug 'junegunn/fzf.vim'
+
 " runs a linter and reports errors on file save
 Plug 'scrooloose/syntastic'
 let g:syntastic_ocaml_checkers = ['merlin']    " OCaml linter is merlin
-let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
+" let g:syntastic_ruby_checkers = ['rubylint']  " Ruby linter is ruby-lint
+let g:syntastic_ruby_mri_exec = '~/.rbenv/shims/ruby'
 let g:syntastic_elixir_checkers = ['elixir']  " Elixir default checker
 let g:syntastic_enable_elixir_checker = 1     " override elixir security
+
+" end syntax structures automatically
+Plug 'tpope/vim-endwise'
 
 " indents ocaml files, ocp-indent is installed with opam
 Plug 'let-def/ocp-indent-vim', { 'for': 'ocaml' }
@@ -151,7 +177,6 @@ set showmatch                " highlight matching brackets.
 set showmode                 " show current mode.
 set ruler                    " the line and column numbers of the cursor.
 set number                   " line numbers on the left side.
-set relativenumber           " line numbers relative to cursor position
 set numberwidth=4            " left side number column is 4 characters wide.
 set expandtab                " insert spaces when TAB is pressed.
 set tabstop=2                " render TABs using this many spaces.
@@ -170,6 +195,9 @@ set sidescrolloff=5          " show next 5 columns while side-scrolling.
 set autochdir                " switch to current file's parent directory.
 set splitbelow               " horizontal split opens under active window
 set splitright               " vertical split opens to right of active window
+set shortmess+=I             " Don't show the intro
+set autowrite                " auto write file when switching buffer
+set clipboard=unnamedplus    " write to vim and system clipboards
 
 
 """""

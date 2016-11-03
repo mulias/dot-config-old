@@ -7,6 +7,7 @@
 export XDG_CONFIG_HOME="$HOME"/.config
 export GTK2_RC_FILES="$XDG_CONFIG_HOME"/gtk-2.0/gtkrc-2.0
 export GTK_RC_FILES="$XDG_CONFIG_HOME"/gtk-1.0/gtkrc-1.0
+export SSH_AUTH_SOCK="$XDG_RUNTIME_DIR/ssh-agent.socket"
 
 ## set paths
 export GOPATH=~/.go
@@ -174,5 +175,8 @@ source ~/bin/scripts/note_completion
 # used by opam to automagically add ocaml packages to path 
 . /home/eli/.opam/opam-init/init.zsh > /dev/null 2> /dev/null || true
 
-# rbenv config
-eval "$(rbenv init -)"
+## ruby version switcher
+# if a directory has a .ruby-version file, use that ruby. Else use 2.3.1
+source /usr/share/chruby/chruby.sh
+source /usr/share/chruby/auto.sh
+chruby 2.3.0

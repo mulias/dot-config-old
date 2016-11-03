@@ -7,6 +7,7 @@
 
 PATH=${HOME}/bin/dmenu_tools:${HOME}/bin/ruby-dmusic:${HOME}/bin/cute:${HOME}/bin/scripts:${HOME}/.gem/ruby/2.0.0/bin:${HOME}/.gem/ruby/2.1.0/bin:${PATH}
 export PATH
+export HISTFILE="$XDG_CONFIG_HOME"/bash/bash_history
 
 export EDITOR="vim"
 export BROWSER="firefox"

@@ -114,7 +114,7 @@ set omnifunc=syntaxcomplete#Complete " use omnicomplete
 set noundofile
 set nobackup
 set noswapfile
-
+set viminfo="NONE"
 
 " text file config, text wraps at 80 characters
 autocmd FileType text setlocal textwidth=80
