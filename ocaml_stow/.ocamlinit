@@ -1,0 +1,22 @@
+(* Added by OPAM. *)
+let () =
+  try Topdirs.dir_directory (Sys.getenv "OCAML_TOPLEVEL_PATH")
+  with Not_found -> ()
+;;
+
+#use "topfind";;
+#thread;;
+#require "core.top";;
+#require "core.syntax";;
+open Core.Std;;
+
+(* Run for interactive shell. In utop this sets the history file location. In 
+   the default ocaml toplevel it gives an error, but the toplevel should keep 
+   working. *)
+if !Sys.interactive then
+  UTop.history_file_name := 
+    match Sys.getenv("HOME") with
+    | Some path -> (try Unix.mkdir (path^"/.utop") ~perm:0o755 with _ -> ());
+                   Some (path^"/.utop/utop-history")
+    | None -> !UTop.history_file_name
+
