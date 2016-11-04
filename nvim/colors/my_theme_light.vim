@@ -28,8 +28,8 @@ let s:magenta  =  "05"
 let s:dmagenta =  "13"
 let s:cyan     =  "06"
 let s:dcyan    =  "14"
-let s:white    =  "07"
-let s:lgrey    =  "15"
+let s:white    =  "15"
+let s:lgrey    =  "07"
 
 " And because nothing can be easy, highlight can't normally take variables, so
 " use a function that evaluates the variable and passes it to highlight
