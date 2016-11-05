@@ -66,21 +66,17 @@ Plug 'cohama/lexima.vim'
 " rails fun
 " gf edit file under cursor, :Rpreview open webpage
 " :A edit 'alternate' file (usually test), :R edit 'related' file (depends)
-" edit :E[controller,helper,javascript,migration,model,spec,stylesheet,view]
+" :E[controller,helper,javascript,migration,model,spec,stylesheet,view] edits
 Plug 'tpope/vim-rails'
 
+" program linting
+" run linters asynchronously, populate the location list with errors
 Plug 'neomake/neomake'
-autocmd! BufWritePost,BufEnter * Neomake
-let g:neomake_ruby_enabled_makers = ['rubocop']
-"let g:neomake_ruby_rubocop_maker = { 'args': ['-c .rubocop_ci.yml'] }
-
-" runs a linter and reports errors on file save
-" could add css, javascript, coffeescript, bash
-" Plug 'scrooloose/syntastic'
-" let g:syntastic_ruby_checkers = ['rubocop']
-" let g:syntastic_ruby_rubocop_args = "-c .rubocop_ci.yml"
-" let g:syntastic_elixir_checkers = ['elixir']
-" let g:syntastic_enable_elixir_checker = 1
+autocmd! BufWritePost * Neomake
+let g:neomake_ruby_enabled_makers = ['mri', 'rubocop']
+let g:neomake_ruby_rubocop_maker = { 'args': ['-c', '.rubocop_ci.yml'] }
+let g:neomake_place_signs = 0
+let g:neomake_verbose = 1
 
 " basic syntax/indent/compiler support for many popular languages
 Plug 'sheerun/vim-polyglot'
@@ -91,6 +87,19 @@ call plug#end()
 """""
 " Theme
 colorscheme my_theme_light
+
+
+"""""
+" Statusline
+set statusline=%<                       " truncate from start
+set statusline+=%f\                     " full filepath
+set statusline+=[%n]                    " buffer number
+set statusline+=%{GitBranchDisplay()}   " git branch
+set statusline+=%h%q%w                  " tags: help, quickfix, preview
+set statusline+=%m%r                    " tags: modified, read only
+set statusline+=%=                      " right align
+set statusline+=%{QFCountDisplay()}     " quickfix and local list counts
+set statusline+=%14(%l,%c%)%5p%%        " line and col number, % through file
 
 
 """""
@@ -305,4 +314,16 @@ function! <SID>SynStack()
     return
   endif
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+endfunc
+
+function! GitBranchDisplay()
+  let str = fugitive#head()
+  if str != ''
+    let str = '[' . str . ']'
+  endif
+  return str
+endfunc
+
+function! QFCountDisplay()
+  return 'QF ' . len(getqflist()) . ', LL ' . len(getloclist(0))
 endfunc
