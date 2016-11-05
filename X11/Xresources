@@ -43,8 +43,8 @@ Xft.lcdfilter:  lcddefault
 *.color14:      #087c70
 
 ! white
-*.color7:       #ffffff
-*.color15:      #b1b1b1
+*.color15:      #ffffff
+*.color7:       #b1b1b1
 
 
 ! -- urxvt settings -- !
@@ -60,12 +60,12 @@ URxvt.matcher.button:   1
 URxvt.iso14755: false
 URxvt.iso14755_52: false
 
-URxvt.tabbed.tabbar-fg: 15
-URxvt.tabbed.tabbar-bg:  7
+URxvt.tabbed.tabbar-fg:  7
+URxvt.tabbed.tabbar-bg: 15
 URxvt.tabbed.tab-fg:     0
-URxvt.tabbed.tab-bg:     7
-URxvt.tabbed.title-fg:   7
-URxvt.tabbed.title-bg:   7
+URxvt.tabbed.tab-bg:    15
+URxvt.tabbed.title-fg:  15
+URxvt.tabbed.title-bg:  15
 
 URxvt.keysym.C-plus:    font-size:increase
 URxvt.keysym.C-minus:   font-size:decrease
