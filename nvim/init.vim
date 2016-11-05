@@ -25,11 +25,12 @@ vmap v <Plug>(expand_region_expand)
 vmap <C-v> <Plug>(expand_region_shrink)
 
 " repeat f and t easily
-" f/F/t/T to repeat last f/t action
+" f/F/t/T to repeat last f/F/t/T action
 Plug 'rhysd/clever-f.vim'
 let g:clever_f_fix_key_direction = 1
 
 " jump to next occurrence of two consecutive characters
+" s/S to activate, s/S agian to repeat
 Plug 'justinmk/vim-sneak'
 hi link SneakPluginTarget Search
 hi link SneakPluginScope Search
@@ -45,7 +46,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-eunuch'
 
 " better in-buffer search defaults
-" remove hihglight after moving cursor, improve * search
+" remove highlight after moving cursor, improve * search
 Plug 'junegunn/vim-slash'
 
 " fuzzy find lots of things
@@ -59,22 +60,30 @@ let g:fzf_action = {
 " end syntax structures automatically
 Plug 'tpope/vim-endwise'
 
-" ruby fun
+" close matching pairs automatically
+Plug 'cohama/lexima.vim'
+
+" rails fun
+" gf edit file under cursor, :Rpreview open webpage
+" :A edit 'alternate' file (usually test), :R edit 'related' file (depends)
+" edit :E[controller,helper,javascript,migration,model,spec,stylesheet,view]
 Plug 'tpope/vim-rails'
-Plug 'vim-ruby/vim-ruby'
+
+Plug 'neomake/neomake'
+autocmd! BufWritePost,BufEnter * Neomake
+let g:neomake_ruby_enabled_makers = ['rubocop']
+"let g:neomake_ruby_rubocop_maker = { 'args': ['-c .rubocop_ci.yml'] }
 
 " runs a linter and reports errors on file save
-Plug 'scrooloose/syntastic'
-let g:syntastic_ruby_checkers = ['rubocop']
-let g:syntastic_ruby_rubocop_args = "-c .rubocop_ci.yml"
-let g:syntastic_elixir_checkers = ['elixir']
-let g:syntastic_enable_elixir_checker = 1
+" could add css, javascript, coffeescript, bash
+" Plug 'scrooloose/syntastic'
+" let g:syntastic_ruby_checkers = ['rubocop']
+" let g:syntastic_ruby_rubocop_args = "-c .rubocop_ci.yml"
+" let g:syntastic_elixir_checkers = ['elixir']
+" let g:syntastic_enable_elixir_checker = 1
 
-" elixir highlighting and indentation
-Plug 'elixir-lang/vim-elixir'
-
-" slim highlighting
-Plug 'slim-template/vim-slim'
+" basic syntax/indent/compiler support for many popular languages
+Plug 'sheerun/vim-polyglot'
 
 call plug#end()
 
