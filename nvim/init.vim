@@ -4,9 +4,11 @@
 call plug#begin('~/.config/nvim/plugged')
 
 " simple file browser
-" open file browser with -
+" open file browser with -, new file with +
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
+let g:filebeagle_suppress_keymaps = 1
+map <silent> - <Plug>FileBeagleOpenCurrentBufferDir
 
 " smart commenting
 " comment/uncomment with gcc
@@ -17,12 +19,15 @@ Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-surround'
 
 " smart select a region of text
-" repeat v to expand region
+" v for visual mode with region expand functionality, ctrl+v to shrink region
 Plug 'terryma/vim-expand-region'
+vmap v <Plug>(expand_region_expand)
+vmap <C-v> <Plug>(expand_region_shrink)
 
 " repeat f and t easily
-" use f/F/t/T to repeat last f/t action
+" f/F/t/T to repeat last f/t action
 Plug 'rhysd/clever-f.vim'
+let g:clever_f_fix_key_direction = 1
 
 " jump to next occurrence of two consecutive characters
 Plug 'justinmk/vim-sneak'
@@ -36,14 +41,20 @@ let g:sneak#absolute_dir = 1
 Plug 'tpope/vim-fugitive'
 
 " unix file managment integration
+" :SudoEdit, :SudoWrite, :Move, :Remove, ...
 Plug 'tpope/vim-eunuch'
 
 " better in-buffer search defaults
+" remove hihglight after moving cursor, improve * search
 Plug 'junegunn/vim-slash'
 
 " fuzzy find lots of things
 Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
+let g:fzf_action = {
+  \ 'ctrl-t': 'tab split',
+  \ 'ctrl-s': 'split',
+  \ 'ctrl-v': 'vsplit' }
 
 " end syntax structures automatically
 Plug 'tpope/vim-endwise'
@@ -57,7 +68,7 @@ Plug 'scrooloose/syntastic'
 let g:syntastic_ruby_checkers = ['rubocop']
 let g:syntastic_ruby_rubocop_args = "-c .rubocop_ci.yml"
 let g:syntastic_elixir_checkers = ['elixir']
-let g:syntastic_enable_elixir_checker = 1     " override elixir security
+let g:syntastic_enable_elixir_checker = 1
 
 " elixir highlighting and indentation
 Plug 'elixir-lang/vim-elixir'
@@ -74,18 +85,13 @@ colorscheme my_theme_light
 
 
 """""
-" Key Remappings
-" use ; for commands, ' to repeat movement
+" Key Mappings
+" use ; for commands
 nnoremap ; :
 vnoremap ; :
-nnoremap ' ;
-vnoremap ' ;
 
 " use Q to execute default register, overrides ex mode.
 nnoremap Q @q
-
-" w!! save a file with sudo even if it was opened without
-cnoremap  w!! w !sudo tee % > /dev/null
 
 " 0 goes to first character and ^ goes to start of line
 nnoremap 0 ^
@@ -94,15 +100,20 @@ nnoremap ^ 0
 " make . work with visually selected lines
 vnoremap . :norm.<CR>
 
-" v for visual mode with region expand functionality, ctrl+v to shrink region
-vmap v <Plug>(expand_region_expand)
-vmap <C-v> <Plug>(expand_region_shrink)
+" dx delete a line without saving to a register
+nnoremap dx "_dd
+
+" - opens file beagle
+
+" v selects the smallest region with expand-region, ctrl+v shrinks region
+
 
 """""
 " Alt Bindings
 " alt+[hl] go back/forward in buffer list
 nnoremap <A-h> :bprevious<CR>
 nnoremap <A-l> :bnext<CR>
+
 
 """""
 " Ctrl Bindings
@@ -118,20 +129,19 @@ nnoremap <C-l> <C-w>l
 " ctrl+s toggle spellcheck for comments
 nnoremap <C-s> :setlocal invspell<CR>
 
+" ctrl+v shrinks visual selectr region with expand-region, v expands
+
 
 """""
 " Leader Bindings
 " Leader
 let mapleader = "\<Space>"
 
-" Local Leader (used for filetype specific bindings)
-let maplocalleader = "\\"
+" Leader+a fzf search with ag
+nnoremap <silent> <Leader>a :Ag<CR>
 
-" Leader+a open Ack
-nmap <Leader>a :Ack!<Space>
-
-" Leader+b list buffers
-nmap <Leader>b :ls<CR>:buffer<Space>
+" Leader+b fzf search buffers
+nnoremap <silent> <Leader>b :Buffers<CR>
 
 " Leader+c close focused window
 nmap <Leader>c <C-w><C-q>
@@ -139,13 +149,20 @@ nmap <Leader>c <C-w><C-q>
 " Leader+d delete this buffer from buffer list, keep split
 nmap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 
-" Leader+e edit file in same dir as current file
-nmap <Leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
+" Leader+e
 
-" Leader+f open filebeagle
+" Leader+f fzf search files in git repo
+nnoremap <silent> <Leader>f :GFiles<CR>
 
-" Leader+[hl] go back/forward in buffer list
-nmap <Leader>h :bprevious<CR>
+" Leader+g fzf search git commits
+nnoremap <silent> <Leader>g :Commits<CR>
+
+" Leader+h[fcs] fzf seach recent history for files, commands, and search
+nnoremap <silent> <Leader>hf :History<CR>
+nnoremap <silent> <Leader>hc :History:<CR>
+nnoremap <silent> <Leader>hs :History/<CR>
+
+" Leader+i
 
 " Leader+I show syntax highlighting groups for word under cursor
 nmap <Leader>I :call <SID>SynStack()<CR>
@@ -154,8 +171,16 @@ nmap <Leader>I :call <SID>SynStack()<CR>
 nmap <Leader>j gqip
 vmap <Leader>j gq
 
-" Leader+[hl] go back/forward in buffer list
-nmap <Leader>l :bnext<CR>
+" Leader+j
+
+" Leader+l fzf search lines in current buffer
+nnoremap <silent> <Leader>l :BLines<CR>
+
+" Leader+m
+
+" Leader+n
+
+" Leader+o
 
 " Leader+[py] paste/yank from/to system clipboard
 nnoremap <Leader>p "+p
@@ -163,67 +188,63 @@ nnoremap <Leader>P "+P
 vnoremap <Leader>p "+p
 vnoremap <Leader>P "+P
 
+" Leader+q
+
 " Leader+r rot13 file
 noremap <Leader>r ggg?G
 
 " Leader+s search and replace
 nmap <Leader>s :%s//g<Left><Left>
 
+" Leader+t
+
+" Leader+u
+
 " Leader+v vertical split
 noremap <Leader>v :vsplit<CR>
+
+" Leader+w fzf search working files, menaing files with unstaged git changes
+nnoremap <silent> <Leader>w :GFiles?<CR>
+
+" Leader+x
 
 " Leader+[py] paste/yank from/to system clipboard
 vnoremap  <Leader>y  "+y
 nnoremap  <Leader>y  "+y
 
-" Leader+/ clear highlight after search
-nnoremap <silent> <Leader>/ :nohlsearch<cr>
+" Leader+z
 
 " Leader+Leader switch between current and last buffer
-" nmap <Leader><Leader> <c-^>
-
-" Local Leader+p, TODO: set for only ocaml
-nmap <silent> <LocalLeader>a :call <SID>OCamlTypePaste()<CR>
-
-" Fuzzy finder
-nnoremap <silent> <Leader><Leader>f :GFiles<CR>
-nnoremap <silent> <Leader><Leader>w :GFiles?<CR>
-nnoremap <silent> <Leader><Leader>b :Buffers<CR>
-nnoremap <silent> <Leader><Leader>a :Ag<CR>
-nnoremap <silent> <Leader><Leader>l :Lines<CR>
-nnoremap <silent> <Leader><Leader>h :History<CR>
-nnoremap <silent> <Leader><Leader>c :History:<CR>
-nnoremap <silent> <Leader><Leader>s :History/<CR>
-nnoremap <silent> <Leader><Leader>g :Commits<CR>
+nmap <Leader><Leader> <c-^>
 
 
 """""
 " All the Little Things
-set showcmd                  " show command in status line as it is composed.
-set showmatch                " highlight matching brackets.
-set showmode                 " show current mode.
-set ruler                    " the line and column numbers of the cursor.
-set number                   " line numbers on the left side.
-set numberwidth=4            " left side number column is 4 characters wide.
-set expandtab                " insert spaces when TAB is pressed.
-set tabstop=2                " render TABs using this many spaces.
-set shiftwidth=2             " indentation amount for < and > commands.
-set noerrorbells             " no beeps.
-set nomodeline               " disable modeline.
+set showcmd                  " show command in status line as it is composed
+set showmatch                " highlight matching brackets
+set showmode                 " show current mode
+set ruler                    " the line and column numbers of the cursor
+set number                   " line numbers on the left side
+set numberwidth=4            " left side number column is 4 characters wide
+set expandtab                " insert spaces when TAB is pressed
+set tabstop=2                " render TABs using this many spaces
+set shiftwidth=2             " indentation amount for < and > commands
+set noerrorbells             " no beeps
+set nomodeline               " disable modeline
 set nojoinspaces             " prevents inserting two spaces on a join (J)
 set ignorecase               " make searching case insensitive...
-set smartcase                " ... unless the query has capital letters.
-set wrap                     " word wrap instead of map by character.
+set smartcase                " ... unless the query has capital letters
+set wrap                     " word wrap instead of map by character
 set colorcolumn=81           " highlight column 81
 set list                     " highlight tabs and trailing spaces
 set listchars=tab:>·,trail:· " symbols to display for tabs and trailing spaces
-set scrolloff=3              " show next 3 lines while scrolling.
-set sidescrolloff=5          " show next 5 columns while side-scrolling.
+set scrolloff=3              " show next 3 lines while scrolling
+set sidescrolloff=5          " show next 5 columns while side-scrolling
 set splitbelow               " horizontal split opens under active window
 set splitright               " vertical split opens to right of active window
 set shortmess+=I             " Don't show the intro
-set autowrite                " auto write file when switching buffer
-set clipboard=unnamedplus    " write to vim and system clipboards
+set autowrite                " auto write file when switching buffers
+set clipboard=unnamedplus    " yank to both vim registers and system clipboard
 
 """""
 " Vim Metadata
@@ -259,22 +280,6 @@ augroup reload_vimrc " {
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END " }
 
-" OCaml config, use correct version of merlin
-" let g:opamshare = substitute(system('opam config var share'),'\n$','','''')
-" execute "set rtp+=" . g:opamshare . "/merlin/vim"
-
-
-"""""
-" Functions
-" OCaml type sig paste
-"function! <SID>OCamlTypePaste()
-"  redir => res
-"  silent call merlin#TypeOf()
-"  redir END
-"  let res = "(* " . substitute(res, '^\n\+', '', '') . " *)"
-"  silent put=res
-"endfunc
-
 " dump list of open buffers
 function! <SID>DumpBuffers()
   redir => res
@@ -292,4 +297,3 @@ function! <SID>SynStack()
   endif
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
-
