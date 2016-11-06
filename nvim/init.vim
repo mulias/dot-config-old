@@ -6,14 +6,14 @@
 " that are necessary for normal vim.
 "
 " Setup
-" What I do to get everything working smooth as butter:
+" What I do to get everything working:
 " * First install Plug by downloading the plugin and placing it in the nvim
 "   autoload directory. I actually have plug saved with my configs in git, so
 "   when I grab this file plug comes with.
 " * Now run :PlugInstall to fetch plugins.
 " * Install Ag, which is used by fzf. If fzf can's find ag it falls back on
 "   grep, which is ok but not as fast.
-" * Install ctags, used by gutentags.
+" * Install ctags, or disable gutentags.
 " * Find linters for regularly used languages, configure Neomake accordingly.
 " * If there's a language plugin that's better than the default provided by
 "   polyglot, make sure to add that language to the 'g:polyglot_disabled'
@@ -40,6 +40,31 @@
 " * 'Metadata' sets where vim files are saved.
 " * 'Filetype Settings' sets rules for specific file types.
 " * 'Helper Functions' defines user functions to call elsewhere in this file.
+"
+" Tricks/Synergies
+" Some plugins/features that I've found work well together:
+" * Search highlighting: vim-slash is set to turn off search highlighting
+"   whenever a non-search motion is used. Usually this is what I want. Sometimes
+"   though I want to search for a term, and then keep highlighting on as I work,
+"   so that the search term is easily identifiable in the file. For those
+"   specific situations I use 'coh' (provided by unimpaired) to toggle
+"   hilighting back on again and make it stay on.
+" * Linting: neomake lints the current file in the background, and sends
+"   errors to the location list (use ':h location-list' to read more). Neomake
+"   comes with a function for reporting the error count in the statusline, but
+"   the function is broken for some linters. Neomake has another option for
+"   marking error lines in the sign column, but that also behaves a little
+"   weird sometimes. To get consistent and unobtrusive behavior, I directly
+"   count the number of items in the location list, and print that number in
+"   the statusline as 'LL num'. When there are errors, I use leader+l to open
+"   the location list, and the unimpaired bindings [l, [L, l], L] to navigate
+"   through the locations.
+" * Auto closing pairs: in most situations lexima auto-closes pairs such as
+"   [], (), '', etc. This is sometimes a problem when I'm editing, want to
+"   surround some existing text, and end up with ()something like this,
+"   instead of (something like this). For this case I use a visual select with 
+"   vim-surround. Select the text you want inside text pairs, and use 'S(' to
+"   surround with ().
 """""
 
 
@@ -84,6 +109,7 @@ let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
 
 " useful pairs of keybindings
+" co[hnrsw] toggle hlsearch, line numbers, relative numbers, spell, wrap
 " [+[blqt] for previous buffer/ll entry/qf entry/tab
 " ]+[blqt] for next buffer/ll entry/qf entry/tab
 " [+[BLQT] for first buffer/ll entry/qf entry/tab
@@ -92,7 +118,6 @@ let g:sneak#absolute_dir = 1
 " ]+space add [count] blank lines below the cursor
 " [e swap current line with line [count] above
 " ]e swap current line with line [count] below
-" co[hnrsw] toggle hlsearch, line numbers, relative numbers, spell, wrap
 " [y / ]y encode/decode string with c-style escape sequences
 Plug 'tpope/vim-unimpaired'
 
@@ -111,7 +136,7 @@ Plug 'junegunn/vim-slash'
 " fuzzy find lots of things
 " open fzf in a terminal buffer, with values loaded in from different sources
 " unmapped commands :Files, :Colors, :Lines, :Tags, :Marks, :Windows, :Locate,
-" :Maps, :Helptags, :Filetypes
+" :Maps, :Helptags, :Filetypes, :BLines
 Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 " Leader+a fzf search with ag
@@ -126,19 +151,12 @@ nnoremap <silent> <Leader>g :Commits<CR>
 nnoremap <silent> <Leader>hf :History<CR>
 nnoremap <silent> <Leader>hc :History:<CR>
 nnoremap <silent> <Leader>hs :History/<CR>
-" Leader+l fzf search lines in current buffer
-nnoremap <silent> <Leader>l :BLines<CR>
 " Leader+w fzf search working files, meaning files with unstaged git changes
 nnoremap <silent> <Leader>w :GFiles?<CR>
 " Leader+tab fzf search possible mappings to start/end current action
-nmap <leader><tab> <plug>(fzf-maps-n)
-xmap <leader><tab> <plug>(fzf-maps-x)
-omap <leader><tab> <plug>(fzf-maps-o)
-" Insert mode completion
-imap <c-x><c-k> <plug>(fzf-complete-word)
-imap <c-x><c-f> <plug>(fzf-complete-path)
-imap <c-x><c-j> <plug>(fzf-complete-file-ag)
-imap <c-x><c-l> <plug>(fzf-complete-line)
+nnoremap <leader><tab> <plug>(fzf-maps-n)
+xnoremap <leader><tab> <plug>(fzf-maps-x)
+onoremap <leader><tab> <plug>(fzf-maps-o)
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
   \ 'ctrl-s': 'split',
@@ -171,6 +189,10 @@ Plug 'sheerun/vim-polyglot'
 " auto generate and manage ctags
 Plug 'ludovicchabant/vim-gutentags'
 
+" view and navigate the undo tree
+" commands:
+Plug 'mbbill/undotree'
+
 call plug#end()
 
 
@@ -178,7 +200,7 @@ call plug#end()
 " Theme & Statusline
 " I use something close to the default statusline, with the addition of
 " indicating the current git branch (requires fugitive) and showing the number
-" of items currently in the quickfix and local lists. The local list is
+" of items currently in the quickfix and location lists. The location list is
 " populated by Neomake linting errors, so when the statusline shows a non-zero
 " number for 'LL', I know to check for errors.
 """""
@@ -192,7 +214,7 @@ set statusline+=%{GitBranchDisplay()}   " git branch
 set statusline+=%h%q%w                  " tags: help, quickfix, preview
 set statusline+=%m%r                    " tags: modified, read only
 set statusline+=%=                      " right align
-set statusline+=%{QFCountDisplay()}     " quickfix and local list counts
+set statusline+=%{QFCountDisplay()}     " quickfix and location list counts
 set statusline+=%14(%l,%c%)%5p%%        " line and col number, % through file
 
 
@@ -212,12 +234,19 @@ nnoremap dx "_dd
 
 " gf edit file under cursor (rails)
 
-" Q to execute default register, overrides ex mode.
+" p pastes, then places cursor at the end of pasted text
+vnoremap <silent> p p`]
+nnoremap <silent> p p`]
+
+" Q to execute q register, overrides ex mode. Save a macro with qq, run with Q.
 nnoremap Q @q
 
 " s/S to sneak, s/S again to repeat
 
 " v selects the smallest region with expand-region, ctrl+v shrinks region
+
+" y yanks visual selection, then places cursor at end of selection
+vnoremap <silent> y y`]
 
 " 0 goes to first character and ^ goes to start of line
 nnoremap 0 ^
@@ -271,11 +300,15 @@ command! Bufdump call <SID>DumpBuffers()
 " mode.
 """""
 
-" alt+[hl] go back/forward in buffer list, leave insert mode
-nnoremap <A-h> :bprevious<CR>
-nnoremap <A-l> :bnext<CR>
-inoremap <A-h> <ESC>:bprevious<CR>
-inoremap <A-l> <ESC>:bnext<CR>
+" alt+[jk] go back/forward in buffer list, leave insert mode
+nnoremap <A-j> :bprevious<CR>
+nnoremap <A-k> :bnext<CR>
+inoremap <A-j> <ESC>:bprevious<CR>
+inoremap <A-k> <ESC>:bnext<CR>
+
+" alt+[]
+nnoremap <A-[> g;
+nnoremap <A-]> g,
 
 " ctrl+a from insert mode call the omnicomplete menu
 inoremap <C-a> <C-x><C-o>
@@ -313,10 +346,10 @@ let mapleader = "\<Space>"
 " Leader+b fzf search buffers
 
 " Leader+c close focused window
-nmap <Leader>c <C-w><C-q>
+nnoremap <Leader>c <C-w><C-q>
 
 " Leader+d delete this buffer from buffer list, keep split
-nmap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
+nnoremap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 
 " Leader+e
 
@@ -329,15 +362,16 @@ nmap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 " Leader+i
 
 " Leader+I show syntax highlighting groups for word under cursor
-nmap <Leader>I :call <SID>SynStack()<CR>
+nnoremap <Leader>I :call <SID>SynStack()<CR>
 
 " Leader+j format the current paragraph/selection, good for ragged text
-nmap <Leader>j gqip
-vmap <Leader>j gq
+nnoremap <Leader>j gqip
+vnoremap <Leader>j gq
 
 " Leader+j
 
-" Leader+l fzf search lines in current buffer
+" Leader+l open the location list
+nnoremap <silent> <Leader>l :lopen<CR>
 
 " Leader+m
 
@@ -351,17 +385,19 @@ nnoremap <Leader>P "+P
 vnoremap <Leader>p "+p
 vnoremap <Leader>P "+P
 
-" Leader+q
+" Leader+q open the quickfix list
+nnoremap <silent> <Leader>q :copen<CR>
 
 " Leader+r rot13 file
-noremap <Leader>r ggg?G
+noremap <Leader>r ggg?G<C-o><C-o>
 
 " Leader+s search and replace
-nmap <Leader>s :%s//g<Left><Left>
+nnoremap <Leader>s :%s//g<Left><Left>
 
 " Leader+t
 
-" Leader+u
+" Leader+u toggle undotree
+nnoremap <leader>u :UndotreeToggle<CR>
 
 " Leader+v vertical split
 noremap <Leader>v :vsplit<CR>
@@ -377,7 +413,9 @@ nnoremap  <Leader>y  "+y
 " Leader+z
 
 " Leader+Leader switch between current and last buffer
-nmap <Leader><Leader> <c-^>
+nnoremap <Leader><Leader> <c-^>
+
+" Leader+tab fzf search possible mappings to start/end current action
 
 
 """""
@@ -487,7 +525,7 @@ function! GitBranchDisplay()
   return str
 endfunc
 
-" formated string to display quickfix/local list counts in statusline
+" formated string to display quickfix/location list counts in statusline
 function! QFCountDisplay()
   return 'QF ' . len(getqflist()) . ', LL ' . len(getloclist(0))
 endfunc
