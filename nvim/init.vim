@@ -1,6 +1,53 @@
 """""
+" init.vim
+" My cleaned up and documented config for neovim, tailored to the features I
+" need for work. This config is not intended to be compatible with normal vim,
+" as it uses plugins that rely on nvim's async, and does not set some options
+" that are necessary for normal vim.
+"
+" Setup
+" What I do to get everything working smooth as butter:
+" * First install Plug by downloading the plugin and placing it in the nvim
+"   autoload directory. I actually have plug saved with my configs in git, so
+"   when I grab this file plug comes with.
+" * Now run :PlugInstall to fetch plugins.
+" * Install Ag, which is used by fzf. If fzf can's find ag it falls back on
+"   grep, which is ok but not as fast.
+" * Install ctags, used by gutentags.
+" * Find linters for regularly used languages, configure Neomake accordingly.
+" * If there's a language plugin that's better than the default provided by
+"   polyglot, make sure to add that language to the 'g:polyglot_disabled'
+"   array. I do this for OCaml with merlin.
+"
+" Documentation
+" The goal is to over-document each section, so that this file can act not
+" only as a configuration, but as a reference for learning/remembering
+" features beyond the vim defaults.
+" * 'Plugins' lists each plugin, describes what it does, and gives the most
+"   useful commands/bindings the plugin adds. Custom key bindings and settings
+"   for the plugin are set right under the plug install line, so that the 
+"   bindings can be easily removed along with the plugin.
+" * 'Theme & Statusline' set appearence.
+" * 'Key Mappings' defines general normal/visual mode mappings in roughly
+"   alphabetical order. Includes comments repeating the key mappings set in
+"   the plugins section.
+" * 'Commands' repeats useful commands added by plugins, and defines commands
+"   for calling functions in the 'Helper Functions' section.
+" * 'Alt/Ctrl Bindings' and 'Leader Bindings' contain the majority of the
+"   custom mappings.
+" * 'All the Little Things' sets vim config params, with a short description
+"   of each option.
+" * 'Metadata' sets where vim files are saved.
+" * 'Filetype Settings' sets rules for specific file types.
+" * 'Helper Functions' defines user functions to call elsewhere in this file.
+"""""
+
+
+"""""
 " Plugins
-" :PlugInstall to install, :PlugUpdate to update all, :PlugClean to remove unused
+" Make sure Plug is manually installed first. Manage with :PlugInstall, 
+" :PlugUpdate, :PlugClean, :PlugUpgrade.
+"""""
 call plug#begin('~/.config/nvim/plugged')
 
 " simple file browser
@@ -8,14 +55,13 @@ call plug#begin('~/.config/nvim/plugged')
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 let g:filebeagle_suppress_keymaps = 1
-map <silent> - <Plug>FileBeagleOpenCurrentBufferDir
 
 " smart commenting
-" comment/uncomment with gcc
+" gcc comment/uncomment
 Plug 'tpope/vim-commentary'
 
 " manipulate surrounding pairs
-" cs to change a surround, ys to add a new surround
+" cs to change a surround, ys to add a new surround, S to surround visual
 Plug 'tpope/vim-surround'
 
 " smart select a region of text
@@ -30,19 +76,32 @@ Plug 'rhysd/clever-f.vim'
 let g:clever_f_fix_key_direction = 1
 
 " jump to next occurrence of two consecutive characters
-" s/S to activate, s/S agian to repeat
+" s/S to activate, s/S again to repeat
 Plug 'justinmk/vim-sneak'
 hi link SneakPluginTarget Search
 hi link SneakPluginScope Search
 let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
 
+" useful pairs of keybindings
+" [+[blqt] for previous buffer/ll entry/qf entry/tab
+" ]+[blqt] for next buffer/ll entry/qf entry/tab
+" [+[BLQT] for first buffer/ll entry/qf entry/tab
+" ]+[BLQT] for last buffer/ll entry/qf entry/tab
+" [+space add [count] blank lines above the cursor
+" ]+space add [count] blank lines below the cursor
+" [e swap current line with line [count] above
+" ]e swap current line with line [count] below
+" co[hnrsw] toggle hlsearch, line numbers, relative numbers, spell, wrap
+" [y / ]y encode/decode string with c-style escape sequences
+Plug 'tpope/vim-unimpaired'
+
 " git integration
 " commands all start with :G
 Plug 'tpope/vim-fugitive'
 
 " unix file managment integration
-" :SudoEdit, :SudoWrite, :Move, :Remove, ...
+" includes :SudoEdit, :SudoWrite, :Move, :Remove
 Plug 'tpope/vim-eunuch'
 
 " better in-buffer search defaults
@@ -50,8 +109,36 @@ Plug 'tpope/vim-eunuch'
 Plug 'junegunn/vim-slash'
 
 " fuzzy find lots of things
+" open fzf in a terminal buffer, with values loaded in from different sources
+" unmapped commands :Files, :Colors, :Lines, :Tags, :Marks, :Windows, :Locate,
+" :Maps, :Helptags, :Filetypes
 Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
+" Leader+a fzf search with ag
+nnoremap <silent> <Leader>a :Ag<CR>
+" Leader+b fzf search buffers
+nnoremap <silent> <Leader>b :Buffers<CR>
+" Leader+f fzf search files in git repo
+nnoremap <silent> <Leader>f :GFiles<CR>
+" Leader+g fzf search git commits
+nnoremap <silent> <Leader>g :Commits<CR>
+" Leader+h[fcs] fzf seach recent history for files, commands, and search
+nnoremap <silent> <Leader>hf :History<CR>
+nnoremap <silent> <Leader>hc :History:<CR>
+nnoremap <silent> <Leader>hs :History/<CR>
+" Leader+l fzf search lines in current buffer
+nnoremap <silent> <Leader>l :BLines<CR>
+" Leader+w fzf search working files, meaning files with unstaged git changes
+nnoremap <silent> <Leader>w :GFiles?<CR>
+" Leader+tab fzf search possible mappings to start/end current action
+nmap <leader><tab> <plug>(fzf-maps-n)
+xmap <leader><tab> <plug>(fzf-maps-x)
+omap <leader><tab> <plug>(fzf-maps-o)
+" Insert mode completion
+imap <c-x><c-k> <plug>(fzf-complete-word)
+imap <c-x><c-f> <plug>(fzf-complete-path)
+imap <c-x><c-j> <plug>(fzf-complete-file-ag)
+imap <c-x><c-l> <plug>(fzf-complete-line)
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
   \ 'ctrl-s': 'split',
@@ -81,16 +168,23 @@ let g:neomake_verbose = 1
 " basic syntax/indent/compiler support for many popular languages
 Plug 'sheerun/vim-polyglot'
 
+" auto generate and manage ctags
+Plug 'ludovicchabant/vim-gutentags'
+
 call plug#end()
 
 
 """""
-" Theme
+" Theme & Statusline
+" I use something close to the default statusline, with the addition of
+" indicating the current git branch (requires fugitive) and showing the number
+" of items currently in the quickfix and local lists. The local list is
+" populated by Neomake linting errors, so when the statusline shows a non-zero
+" number for 'LL', I know to check for errors.
+"""""
+
 colorscheme my_theme_light
 
-
-"""""
-" Statusline
 set statusline=%<                       " truncate from start
 set statusline+=%f\                     " full filepath
 set statusline+=[%n]                    " buffer number
@@ -104,62 +198,119 @@ set statusline+=%14(%l,%c%)%5p%%        " line and col number, % through file
 
 """""
 " Key Mappings
-" use ; for commands
-nnoremap ; :
-vnoremap ; :
+" General bindings that don't use a special prefix key like Leader.
+"""""
 
-" use Q to execute default register, overrides ex mode.
+" co[hnrsw] toggle hlsearch, line numbers, relative numbers, spell, wrap
+
+" cs to change a surround, ys to add a new surround, S to surround visual
+
+" dx delete a line without saving to a register
+nnoremap dx "_dd
+
+" gcc comment/uncomment
+
+" gf edit file under cursor (rails)
+
+" Q to execute default register, overrides ex mode.
 nnoremap Q @q
+
+" s/S to sneak, s/S again to repeat
+
+" v selects the smallest region with expand-region, ctrl+v shrinks region
 
 " 0 goes to first character and ^ goes to start of line
 nnoremap 0 ^
 nnoremap ^ 0
 
+" use ; for commands
+nnoremap ; :
+vnoremap ; :
+
 " make . work with visually selected lines
 vnoremap . :norm.<CR>
 
-" dx delete a line without saving to a register
-nnoremap dx "_dd
-
 " - opens file beagle
 
-" v selects the smallest region with expand-region, ctrl+v shrinks region
+" [+[blqt] for previous buffer/ll entry/qf entry/tab
+" ]+[blqt] for next buffer/ll entry/qf entry/tab
+" [+[BLQT] for first buffer/ll entry/qf entry/tab
+" ]+[BLQT] for last buffer/ll entry/qf entry/tab
+" [+space add [count] blank lines above the cursor
+" ]+space add [count] blank lines below the cursor
+" [e swap current line with line [count] above
+" ]e swap current line with line [count] below
+" [y and ]y encode/decode string with c-style escape sequences
 
 
 """""
-" Alt Bindings
-" alt+[hl] go back/forward in buffer list
+" Commands
+" Functions that I don't use enough to motivate key bindings.
+"""""
+
+" grab the buffer list and slap it all into the current buffer
+command! Bufdump call <SID>DumpBuffers()
+
+" plug starts with :Plug, includes Install, Clean, Update, Upgrade
+
+" git starts with :G, includes blame, diff
+
+" unix utilities include :SudoEdit, :SudoWrite, :Move, :Remove
+
+" rails
+" :Rpreview open webpage, :A edit 'alternate' file (usually test)
+" :R edit 'related' file (depends), editing specific files starts with :E
+
+" linting starts with :Neomake, includes Info, ListJobs, CancleJob
+
+
+"""""
+" Alt/Ctrl Bindings
+" I generally limit alt and ctrl to actions that are used multiple times in a
+" row (like traversing the buffer list), and functions that get called in insert
+" mode.
+"""""
+
+" alt+[hl] go back/forward in buffer list, leave insert mode
 nnoremap <A-h> :bprevious<CR>
 nnoremap <A-l> :bnext<CR>
+inoremap <A-h> <ESC>:bprevious<CR>
+inoremap <A-l> <ESC>:bnext<CR>
 
-
-"""""
-" Ctrl Bindings
 " ctrl+a from insert mode call the omnicomplete menu
 inoremap <C-a> <C-x><C-o>
 
-" ctrl+[hjkl] navigate between split windows with
+" ctrl+[hjkl] navigate between split windows, leave insert mode
 nnoremap <C-j> <C-w>j
 nnoremap <C-k> <C-w>k
 nnoremap <C-h> <C-w>h
 nnoremap <C-l> <C-w>l
+inoremap <C-j> <ESC><C-w>j
+inoremap <C-k> <ESC><C-w>k
+inoremap <C-h> <ESC><C-w>h
+inoremap <C-l> <ESC><C-w>l
 
-" ctrl+s toggle spellcheck for comments
-nnoremap <C-s> :setlocal invspell<CR>
-
-" ctrl+v shrinks visual selectr region with expand-region, v expands
+" ctrl+v shrinks visual select region with expand-region, v expands
 
 
 """""
 " Leader Bindings
+" All general convenience bindings go under the leader key. Ideally each
+" action should be leader plus one character, where the character is some
+" moderately obvious mnemonic. In some cases a group of commands will all use
+" leader plus two characters, where the first character is shared and
+" represents a general kind of action, which the second character refines. For
+" example, Leader+hf searches file history, Leader+hc command history, and
+" Leader+hs buffer search history. I like to keep comments for unused
+" bindings, so I know what is still available.
+"""""
+
 " Leader
 let mapleader = "\<Space>"
 
 " Leader+a fzf search with ag
-nnoremap <silent> <Leader>a :Ag<CR>
 
 " Leader+b fzf search buffers
-nnoremap <silent> <Leader>b :Buffers<CR>
 
 " Leader+c close focused window
 nmap <Leader>c <C-w><C-q>
@@ -170,15 +321,10 @@ nmap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 " Leader+e
 
 " Leader+f fzf search files in git repo
-nnoremap <silent> <Leader>f :GFiles<CR>
 
 " Leader+g fzf search git commits
-nnoremap <silent> <Leader>g :Commits<CR>
 
 " Leader+h[fcs] fzf seach recent history for files, commands, and search
-nnoremap <silent> <Leader>hf :History<CR>
-nnoremap <silent> <Leader>hc :History:<CR>
-nnoremap <silent> <Leader>hs :History/<CR>
 
 " Leader+i
 
@@ -192,7 +338,6 @@ vmap <Leader>j gq
 " Leader+j
 
 " Leader+l fzf search lines in current buffer
-nnoremap <silent> <Leader>l :BLines<CR>
 
 " Leader+m
 
@@ -221,12 +366,11 @@ nmap <Leader>s :%s//g<Left><Left>
 " Leader+v vertical split
 noremap <Leader>v :vsplit<CR>
 
-" Leader+w fzf search working files, menaing files with unstaged git changes
-nnoremap <silent> <Leader>w :GFiles?<CR>
+" Leader+w fzf search working files, meaning files with unstaged git changes
 
 " Leader+x
 
-" Leader+[py] paste/yank from/to system clipboard
+" Leader+[yp] yank/paste to/from system clipboard
 vnoremap  <Leader>y  "+y
 nnoremap  <Leader>y  "+y
 
@@ -238,10 +382,13 @@ nmap <Leader><Leader> <c-^>
 
 """""
 " All the Little Things
+" I've removed all nvim default settings, even if they aren't defaults in
+" normal vim. What's left is a much more managable list, but it won't make a
+" good default vim setup.
+"""""
 set showcmd                  " show command in status line as it is composed
 set showmatch                " highlight matching brackets
 set showmode                 " show current mode
-set ruler                    " the line and column numbers of the cursor
 set number                   " line numbers on the left side
 set numberwidth=4            " left side number column is 4 characters wide
 set expandtab                " insert spaces when TAB is pressed
@@ -264,13 +411,20 @@ set shortmess+=I             " Don't show the intro
 set autowrite                " auto write file when switching buffers
 set clipboard=unnamedplus    " yank to both vim registers and system clipboard
 
+
 """""
-" Vim Metadata
-" manage meta files by keeping them all under .config/nvim/tmp/
+" Metadata
+" I manage meta files by keeping them all under '.config/nvim/tmp/'.
+" As for which meta files to use and which to disable:
+"  * Keeping an undo history has obvious benefits, and no real downsides.
+"  * Backups are a matter of preference, but I have disk space so why not.
+"  * Swapfiles are a mixed bag -- they provide crash resistance, but lock files
+"    so that only one instance of vim can edit a file at a time. My work flow 
+"    uses only one open vim session, so locking files is not a problem.
+"""""
 set undofile  " keep undo history persistent
 set backup    " backup all files
 set swapfile  " save buffers periodically
-" save backup and swap stuff in directories
 set undodir=~/.config/nvim/tmp/undo//           " undo files
 set backupdir=~/.config/nvim/tmp/backup//       " backups
 set directory=~/.config/nvim/tmp/swap//         " swap files
@@ -289,14 +443,24 @@ endif
 
 """""
 " Filetype Settings
+" Most filetypes are dealt with by plugins, here's what is left.
+"""""
+
 " text file config, text wraps at 80 characters
 autocmd FileType text setlocal textwidth=80
+autocmd FileType markdown setlocal textwidth=80
 
 " vim config config, reload vimrc every time buffer is saved
 augroup reload_vimrc " {
     autocmd!
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END " }
+
+
+"""""
+" Helper Functions
+" Hide these at the bottom.
+"""""
 
 " dump list of open buffers
 function! <SID>DumpBuffers()
@@ -306,9 +470,7 @@ function! <SID>DumpBuffers()
   silent put=res
 endfunc
 
-command! Bufdump call <SID>DumpBuffers()
-
-" Vim theme building helper
+" vim theme building helper
 function! <SID>SynStack()
   if !exists("*synstack")
     return
@@ -316,6 +478,7 @@ function! <SID>SynStack()
   echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 endfunc
 
+" formated string to display git branch in statusline
 function! GitBranchDisplay()
   let str = fugitive#head()
   if str != ''
@@ -324,6 +487,7 @@ function! GitBranchDisplay()
   return str
 endfunc
 
+" formated string to display quickfix/local list counts in statusline
 function! QFCountDisplay()
   return 'QF ' . len(getqflist()) . ', LL ' . len(getloclist(0))
 endfunc
