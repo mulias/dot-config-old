@@ -67,6 +67,8 @@
 "   surround with ().
 "===============================================================================
 
+" Leader
+let mapleader = "\<Space>"
 
 "===============================================================================
 " Plugins
@@ -81,6 +83,7 @@ call plug#begin('~/.config/nvim/plugged')
 Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 let g:filebeagle_suppress_keymaps = 1
+map <silent> - <Plug>FileBeagleOpenCurrentBufferDir
 
 " smart commenting
 " gcc comment/uncomment
@@ -179,19 +182,22 @@ Plug 'tpope/vim-rails'
 " run linters asynchronously, populate the location list with errors
 Plug 'neomake/neomake'
 autocmd! BufWritePost * Neomake
-let g:neomake_ruby_enabled_makers = ['mri', 'rubocop']
+let g:neomake_ruby_enabled_makers = ['rubocop']
 let g:neomake_ruby_rubocop_maker = { 'args': ['-c', '.rubocop_ci.yml'] }
 let g:neomake_place_signs = 0
 let g:neomake_verbose = 1
-
-" basic syntax/indent/compiler support for many popular languages
-Plug 'sheerun/vim-polyglot'
 
 " auto generate and manage ctags
 Plug 'ludovicchabant/vim-gutentags'
 
 " view and navigate the undo tree
 " Plug 'mbbill/undotree'
+
+" basic syntax/indent/compiler support for many popular languages
+Plug 'sheerun/vim-polyglot'
+
+" scss syntax support
+" Plug 'cakebaker/scss-syntax.vim'
 
 call plug#end()
 
@@ -207,8 +213,9 @@ call plug#end()
 
 colorscheme my_theme_light
 
-set statusline=%<                       " truncate from start
+set statusline=
 set statusline+=%f\                     " full filepath
+set statusline+=%<                      " truncate after filepath
 set statusline+=[%n]                    " buffer number
 set statusline+=%{GitBranchDisplay()}   " git branch
 set statusline+=%h%q%w                  " tags: help, quickfix, preview
@@ -337,9 +344,6 @@ inoremap <C-l> <ESC><C-w>l
 " Leader+hs buffer search history. I like to keep comments for unused
 " bindings, so I know what is still available.
 "===============================================================================
-
-" Leader
-let mapleader = "\<Space>"
 
 " Leader+a fzf search with ag
 
