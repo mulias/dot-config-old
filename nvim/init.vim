@@ -1,4 +1,4 @@
-"""""
+"===============================================================================
 " init.vim
 " My cleaned up and documented config for neovim, tailored to the features I
 " need for work. This config is not intended to be compatible with normal vim,
@@ -46,7 +46,7 @@
 " * Search highlighting: vim-slash is set to turn off search highlighting
 "   whenever a non-search motion is used. Usually this is what I want. Sometimes
 "   though I want to search for a term, and then keep highlighting on as I work,
-"   so that the search term is easily identifiable in the file. For those
+"   so that the search term is easily identifiable in the buffer. For those
 "   specific situations I use 'coh' (provided by unimpaired) to toggle
 "   hilighting back on again and make it stay on.
 " * Linting: neomake lints the current file in the background, and sends
@@ -65,14 +65,15 @@
 "   instead of (something like this). For this case I use a visual select with 
 "   vim-surround. Select the text you want inside text pairs, and use 'S(' to
 "   surround with ().
-"""""
+"===============================================================================
 
 
-"""""
+"===============================================================================
 " Plugins
 " Make sure Plug is manually installed first. Manage with :PlugInstall, 
 " :PlugUpdate, :PlugClean, :PlugUpgrade.
-"""""
+"===============================================================================
+
 call plug#begin('~/.config/nvim/plugged')
 
 " simple file browser
@@ -195,14 +196,14 @@ Plug 'ludovicchabant/vim-gutentags'
 call plug#end()
 
 
-"""""
+"===============================================================================
 " Theme & Statusline
 " I use something close to the default statusline, with the addition of
 " indicating the current git branch (requires fugitive) and showing the number
 " of items currently in the quickfix and location lists. The location list is
 " populated by Neomake linting errors, so when the statusline shows a non-zero
 " number for 'LL', I know to check for errors.
-"""""
+"===============================================================================
 
 colorscheme my_theme_light
 
@@ -217,10 +218,10 @@ set statusline+=%{QFCountDisplay()}     " quickfix and location list counts
 set statusline+=%14(%l,%c%)%5p%%        " line and col number, % through file
 
 
-"""""
+"===============================================================================
 " Key Mappings
 " General bindings that don't use a special prefix key like Leader.
-"""""
+"===============================================================================
 
 " co[hnrsw] toggle hlsearch, line numbers, relative numbers, spell, wrap
 
@@ -271,10 +272,10 @@ vnoremap . :norm.<CR>
 " [y and ]y encode/decode string with c-style escape sequences
 
 
-"""""
+"===============================================================================
 " Commands
 " Functions that I don't use enough to motivate key bindings.
-"""""
+"===============================================================================
 
 " grab the buffer list and slap it all into the current buffer
 command! Bufdump call <SID>DumpBuffers()
@@ -292,12 +293,12 @@ command! Bufdump call <SID>DumpBuffers()
 " linting starts with :Neomake, includes Info, ListJobs, CancleJob
 
 
-"""""
+"===============================================================================
 " Alt/Ctrl Bindings
 " I generally limit alt and ctrl to actions that are used multiple times in a
 " row (like traversing the buffer list), and functions that get called in insert
 " mode.
-"""""
+"===============================================================================
 
 " alt+[hl] go back/forward in buffer list, leave insert mode
 nnoremap <A-h> :bprevious<CR>
@@ -325,7 +326,7 @@ inoremap <C-l> <ESC><C-w>l
 " ctrl+v shrinks visual select region with expand-region, v expands
 
 
-"""""
+"===============================================================================
 " Leader Bindings
 " All general convenience bindings go under the leader key. Ideally each
 " action should be leader plus one character, where the character is some
@@ -335,7 +336,7 @@ inoremap <C-l> <ESC><C-w>l
 " example, Leader+hf searches file history, Leader+hc command history, and
 " Leader+hs buffer search history. I like to keep comments for unused
 " bindings, so I know what is still available.
-"""""
+"===============================================================================
 
 " Leader
 let mapleader = "\<Space>"
@@ -350,7 +351,7 @@ nnoremap <Leader>c <C-w><C-q>
 " Leader+d delete this buffer from buffer list, keep split
 nnoremap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 
-" Leader+e
+" Leader+e TODO
 
 " Leader+f fzf search files in git repo
 
@@ -358,7 +359,7 @@ nnoremap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 
 " Leader+h[fcs] fzf seach recent history for files, commands, and search
 
-" Leader+i
+" Leader+i TODO
 
 " Leader+I show syntax highlighting groups for word under cursor
 nnoremap <Leader>I :call <SID>SynStack()<CR>
@@ -367,16 +368,16 @@ nnoremap <Leader>I :call <SID>SynStack()<CR>
 nnoremap <Leader>j gqip
 vnoremap <Leader>j gq
 
-" Leader+j
+" Leader+j TODO
 
 " Leader+l open the location list
 nnoremap <silent> <Leader>l :lopen<CR>
 
-" Leader+m
+" Leader+m TODO
 
-" Leader+n
+" Leader+n TODO
 
-" Leader+o
+" Leader+o TODO
 
 " Leader+[py] paste/yank from/to system clipboard
 nnoremap <Leader>p "+p
@@ -393,7 +394,7 @@ noremap <Leader>r ggg?G<C-o><C-o>
 " Leader+s search and replace
 nnoremap <Leader>s :%s//g<Left><Left>
 
-" Leader+t
+" Leader+t TODO
 
 " Leader+u toggle undotree
 nnoremap <leader>u :UndotreeToggle<CR>
@@ -403,13 +404,13 @@ noremap <Leader>v :vsplit<CR>
 
 " Leader+w fzf search working files, meaning files with unstaged git changes
 
-" Leader+x
+" Leader+x TODO
 
 " Leader+[yp] yank/paste to/from system clipboard
 vnoremap  <Leader>y  "+y
 nnoremap  <Leader>y  "+y
 
-" Leader+z
+" Leader+z TODO
 
 " Leader+Leader switch between current and last buffer
 nnoremap <Leader><Leader> <c-^>
@@ -417,12 +418,13 @@ nnoremap <Leader><Leader> <c-^>
 " Leader+tab fzf search possible mappings to start/end current action
 
 
-"""""
+"===============================================================================
 " All the Little Things
 " I've removed all nvim default settings, even if they aren't defaults in
 " normal vim. What's left is a much more managable list, but it won't make a
 " good default vim setup.
-"""""
+"===============================================================================
+
 set showcmd                  " show command in status line as it is composed
 set showmatch                " highlight matching brackets
 set showmode                 " show current mode
@@ -449,7 +451,7 @@ set autowrite                " auto write file when switching buffers
 set clipboard=unnamedplus    " yank to both vim registers and system clipboard
 
 
-"""""
+"===============================================================================
 " Metadata
 " I manage meta files by keeping them all under '.config/nvim/tmp/'.
 " As for which meta files to use and which to disable:
@@ -458,7 +460,8 @@ set clipboard=unnamedplus    " yank to both vim registers and system clipboard
 "  * Swapfiles are a mixed bag -- they provide crash resistance, but lock files
 "    so that only one instance of vim can edit a file at a time. My work flow 
 "    uses only one open vim session, so locking files is not a problem.
-"""""
+"===============================================================================
+
 set undofile  " keep undo history persistent
 set backup    " backup all files
 set swapfile  " save buffers periodically
@@ -478,10 +481,10 @@ if !isdirectory(expand(&directory))
 endif
 
 
-"""""
+"===============================================================================
 " Filetype Settings
 " Most filetypes are dealt with by plugins, here's what is left.
-"""""
+"===============================================================================
 
 " text file config, text wraps at 80 characters
 autocmd FileType text setlocal textwidth=80
@@ -494,10 +497,10 @@ augroup reload_vimrc " {
 augroup END " }
 
 
-"""""
+"===============================================================================
 " Helper Functions
 " Hide these at the bottom.
-"""""
+"===============================================================================
 
 " dump list of open buffers
 function! <SID>DumpBuffers()
