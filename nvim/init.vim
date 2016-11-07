@@ -190,8 +190,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'ludovicchabant/vim-gutentags'
 
 " view and navigate the undo tree
-" commands:
-Plug 'mbbill/undotree'
+" Plug 'mbbill/undotree'
 
 call plug#end()
 
@@ -300,15 +299,15 @@ command! Bufdump call <SID>DumpBuffers()
 " mode.
 """""
 
-" alt+[jk] go back/forward in buffer list, leave insert mode
-nnoremap <A-j> :bprevious<CR>
-nnoremap <A-k> :bnext<CR>
-inoremap <A-j> <ESC>:bprevious<CR>
-inoremap <A-k> <ESC>:bnext<CR>
+" alt+[hl] go back/forward in buffer list, leave insert mode
+nnoremap <A-h> :bprevious<CR>
+nnoremap <A-l> :bnext<CR>
+inoremap <A-h> <ESC>:bprevious<CR>
+inoremap <A-l> <ESC>:bnext<CR>
 
-" alt+[]
-nnoremap <A-[> g;
-nnoremap <A-]> g,
+" alt+[ / alt+] go back/forward in the jump list
+nnoremap <A-[> <C-o>
+nnoremap <A-]> <C-i>
 
 " ctrl+a from insert mode call the omnicomplete menu
 inoremap <C-a> <C-x><C-o>
