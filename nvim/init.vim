@@ -180,7 +180,7 @@ Plug 'ludovicchabant/vim-gutentags'
 Plug 'mbbill/undotree'
 
 " additional text objects
-" l               text object for a while line or text in a line
+" l               text object for a whole line or text in a line
 " e               text object for entire buffer, with/without trailing new lines
 " c               text object for a whole comment or the comment's contents
 " v               text object for part of a variable, snake_case or camelCase
@@ -189,6 +189,13 @@ Plug 'kana/vim-textobj-line'
 Plug 'kana/vim-textobj-entire'
 Plug 'glts/vim-textobj-comment'
 Plug 'Julian/vim-textobj-variable-segment'
+
+Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
+let g:deoplete#enable_at_startup = 1
+if !exists('g:deoplete#omni#input_patterns')
+  let g:deoplete#omni#input_patterns = {}
+endif
+let g:deoplete#disable_auto_complete = 1
 
 call plug#end()
 
@@ -220,11 +227,6 @@ set statusline+=%12(%l,%c%)%5p%%        " line and col number, % through file
 " combo makes the list if it's something that I use frequently, or am trying to
 " use more frequently.
 "===============================================================================
-
-" {Insert}<C-a>    call the omnicomplete menu
-" <C-a>            insert at end of word, call the omnicomplete menu
-" inoremap <C-a> <C-x><C-o>
-" nnoremap <C-a> bea<C-x><C-o>
 
 " a                insert after cursor
 " A                insert at end of line
@@ -479,13 +481,17 @@ vnoremap . :norm.<CR>
 " {FileBeagle}<CR> go to directoy/edit file under cursor
 nnoremap - :FileBeagleBufferDir<CR>
 
-" <A-{*}>  auto close pair, quick and dirty version
+" <A-{*}>          auto close pair, quick and dirty version
 inoremap <A-'> ''<ESC>i
 inoremap <A-"> ""<ESC>i
 inoremap <A-`> ``<ESC>i
 inoremap <A-[> []<ESC>i
 inoremap <A-{> {}<ESC>i
 inoremap <A-(> ()<ESC>i
+
+" <Tab>            TODO
+" {Instert}<Tab>   show dropdown completion menu, scroll through menu
+inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : deoplete#manual_complete()
 
 
 "===============================================================================
@@ -661,6 +667,7 @@ set splitright               " vertical split opens to right of active window
 set shortmess+=I             " Don't show the intro
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
+set title                    " set terminal title to current buffer file name
 
 
 "===============================================================================
