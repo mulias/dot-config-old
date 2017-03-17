@@ -45,6 +45,25 @@ if exists("syntax_on")
 endif
 let g:colors_name="my_theme_light"
 
+""" Colors
+"         group              fg             bg
+call s:hi("Black",           s:white,       s:black)
+call s:hi("DGrey",           s:white,       s:dgrey)
+call s:hi("Red",             s:black,       s:red)
+call s:hi("DRed",            s:black,       s:dred)
+call s:hi("Green",           s:black,       s:green)
+call s:hi("DGreen",          s:black,       s:dgreen)
+call s:hi("Yellow",          s:black,       s:yellow)
+call s:hi("DYellow",         s:black,       s:dyellow)
+call s:hi("Blue",            s:black,       s:blue)
+call s:hi("DBlue",           s:black,       s:dblue)
+call s:hi("Magenta",         s:black,       s:magenta)
+call s:hi("DMagenta",        s:black,       s:dmagenta)
+call s:hi("Cyan",            s:black,       s:cyan)
+call s:hi("DCyan",           s:black,       s:dcyan)
+call s:hi("LGrey",           s:black,       s:lgrey)
+call s:hi("White",           s:black,       s:white)
+
 """ Syntax groups
 "         group              fg             bg
 call s:hi("Comment",         s:dgrey,       s:none)   " Comment
@@ -72,13 +91,13 @@ call s:hi("Type",            s:dblue,       s:none)   " Type
 call s:hi("StorageClass",    s:dblue,       s:none)
 call s:hi("Structure",       s:dblue,       s:none)
 call s:hi("Typedef",         s:dblue,       s:none)
-"call s:hi("Special",         s:magenta,     s:none)   " Special
-"call s:hi("SpecialChar",     s:magenta,     s:none)
-"call s:hi("Tag",             s:magenta,     s:none)
-"call s:hi("Delimiter",       s:magenta,     s:none)
-"call s:hi("SpecialComment",  s:magenta,     s:none)
-"call s:hi("Debug",           s:magenta,     s:none)
-"call s:hi("Underlined",      s:lgrey,       s:none)   " Underlined
+call s:hi("Special",         s:magenta,     s:none)   " Special
+call s:hi("SpecialChar",     s:magenta,     s:none)
+call s:hi("Tag",             s:magenta,     s:none)
+call s:hi("Delimiter",       s:magenta,     s:none)
+call s:hi("SpecialComment",  s:magenta,     s:none)
+call s:hi("Debug",           s:magenta,     s:none)
+call s:hi("Underlined",      s:lgrey,       s:none)   " Underlined
 call s:hi("Ignore",          s:white,       s:none)   " Ignore
 call s:hi("Error",           s:black,       s:red)    " Error
 call s:hi("Todo",            s:black,       s:yellow) " Todo
@@ -88,12 +107,17 @@ call s:hi("Todo",            s:black,       s:yellow) " Todo
 call s:hi("Normal",          s:black,       s:none)
 call s:hi("LineNr",          s:lgrey,       s:none)
 call s:hi("CursorLineNr",    s:lgrey,       s:none)
-call s:hi("ColorColumn",     s:black,       s:lgrey) 
+call s:hi("ColorColumn",     s:none,        s:lgrey)
 call s:hi("VertSplit",       s:white,       s:black)
-call s:hi("MatchParen",	     s:black,       s:yellow)
-call s:hi("NonText",   	     s:blue,        s:none)
+call s:hi("MatchParen",      s:black,       s:yellow)
+call s:hi("NonText",         s:blue,        s:none)
 call s:hi("Search",          s:black,       s:yellow)
-call s:hi("Visual",          s:black,       s:lgrey)
+call s:hi("Visual",          s:none,        s:lgrey)
+call s:hi("Pmenu",           s:black,       s:lgrey)
+call s:hi("PmenuSel",        s:black,       s:cyan)
+call s:hi("PmenuSbar",       s:blue,        s:red)
+call s:hi("QuickFixLine",    s:black,       s:yellow)
+call s:hi("Substitute",    s:black,        s:white)
 "hi Cursor
 "hi CursorIM	
 "hi Directory	

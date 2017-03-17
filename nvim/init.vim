@@ -5,9 +5,10 @@
 "
 " Setup
 " What I do to get everything working:
-" * First install Plug by downloading the plugin and placing it in the nvim
-"   autoload directory. I actually have plug saved with my configs in git, so
-"   when I grab this file Plug will come with.
+" * First install Plug (https://github.com/junegunn/vim-plug) by downloading
+"   the plugin and placing it in the nvim autoload directory. I actually have
+"   plug saved with my configs in git, so when I grab this file Plug will come
+"   with.
 " * Now run :PlugInstall to fetch plugins.
 " * Install Ag, which is used by fzf. If fzf can's find ag it falls back on
 "   grep, which is ok but not as fast.
@@ -27,11 +28,26 @@
 " list immediately following.
 "
 " Vim Compatibility
+" TODO: I don't think this is true any more, if nothing else vim-test is set
+" to use neoterm.
 " I'm pretty sure that all plugins and settings should be compatible with vim
 " 8.0 and onwards. You'll want to change all of the hardcoded paths (plug
 " path, metadata paths) to corresponding vim directories. Also add
 " 'tpope/vim-sensible' to the plugins in order to get basic default settings
 " that are auto-configured in neovim but not vim.
+"
+" TODO: Split out individual languages into separate files. Enable/disable
+" each language from this file.
+"   * Ruby
+"   * Rails
+"   * ERB
+"   * Elm
+"   * Javascript
+"   * Coffee script
+"   * Elixir
+"   * OCaml
+"   * markdown
+"   * git commits
 "===============================================================================
 
 
@@ -43,9 +59,9 @@
 
 call plug#begin('~/.config/nvim/plugged')
 
-" simple file browser
+" Simple file browser
 " -                open file beagle in buffer directory
-" {FileBeagle}+    edit new file in directory
+" {FileBeagle}+    add new file in directory
 " {FileBeagle}q    return to buffer FB was called from
 " {FileBeagle}<CR> go to directory/edit file under cursor
 " show hidden files and dirs, suppress the default binding of <Leader>f
@@ -53,36 +69,44 @@ Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 let g:filebeagle_suppress_keymaps = 1
 
-" smart commenting
+" Smart commenting
 " gc{motion}       toggle commenting on lines that {motion} moves over
 " gcc              comment/uncomment line
 Plug 'tpope/vim-commentary'
 
-" manipulate surrounding pairs
+" Manipulate surrounding pairs
 " cs{c1}{c1}       change surrounding chars from {c1} to {c2}
 " ds{c}            delete surrounding chars {c}
 " ys{motion}{c}    add new surrounding chars {c}
 " {Visual}S{c}     surround selection with {c}
+" <Leader>y{c}     shortcut for ysiw{c}, surround word under cursor with {c}
+" <Leader>Y{c}     shortcut for ysiW{c}, surround WORD under cursor with {c}
 Plug 'tpope/vim-surround'
 
-" repeat find and 'till easily
+" Repeat find and 'till easily
 " f or t           repeat last f/F/t/T motion forward
 " F or T           repeat last f/F/t/T motion backward
 Plug 'rhysd/clever-f.vim'
 let g:clever_f_fix_key_direction = 1
 
-" jump to next occurrence of two consecutive characters
+" Jump to next occurrence of two consecutive characters
 " s{c}{c}          jump forward to next occurrence of two consecutive chars
 " S{c}{c}          jump backward to previous occurrence of two consecutive chars
 " s<CR>            repeat last sneak forward
 " S<CR>            repeat last sneak backward
+" {Visual}s        sneak forward with visual selection
+" {Visual}Z        sneak backward with visual selection (surround uses S)
 Plug 'justinmk/vim-sneak'
-hi link SneakPluginTarget Search
-hi link SneakPluginScope Search
 let g:sneak#s_next = 1
 let g:sneak#absolute_dir = 1
+augroup my_sneak_highlights
+  au!
+  autocmd ColorScheme *
+        \ hi! link Sneak Search |
+        \ hi! link SneakScope Visual
+augroup END
 
-" useful pairs of keybindings
+" Useful pairs of keybindings, change vim settings
 " [b, [B, ]b, ]B   previous, first, next, last buffer
 " [l, [L, ]l, ]L   previous, first, next, last local list entry
 " [q, [Q, ]q, ]Q   previous, first, next, last quickfix list entry
@@ -100,42 +124,76 @@ let g:sneak#absolute_dir = 1
 " cow              toggle wrap
 Plug 'tpope/vim-unimpaired'
 
-" make surround and unimpaired work with the . repeat command
+" Make surround and unimpaired work with the "." repeat command
 Plug 'tpope/vim-repeat'
 
-" git syntax/nice defaults
+" Git syntax/nice defaults
 Plug 'tpope/vim-git'
 
-" git integration
-" commands all start with :G
+" Git integration
+" Commands all start with ":G".
 " gb               git blame in buffer (I use this a lot)
 " <Leader>gb       git blame in buffer
 " <Leader>gd       git diff on buffer
 " <Leader>gs       git status display
 Plug 'tpope/vim-fugitive'
 
-" unix file managment integration
-" includes ":SudoEdit", ":SudoWrite", ":Move", ":Remove"
+" Magit in vim
+" special buffer for staging and committing chunks of code.
+" :Magit           open magit buffer
+" <Leader>gm       open magit buffer
+" {Magit}?         view magit help
+" zo               open a fold
+" zc               close a fold
+Plug 'jreybert/vimagit'
+
+" Unix file managment integration
+" Includes ":SudoEdit", ":SudoWrite", ":Move", ":Remove".
 Plug 'tpope/vim-eunuch'
 
-" better in-buffer search defaults
-" remove highlight after moving cursor, allow * search for selection
+" Better in-buffer search defaults
+" Remove highlight after moving cursor, allow * search for selection.
 " {Visual}*        search for selection forward
 " {Visual}#        search for selection backward
 Plug 'junegunn/vim-slash'
 
-" fuzzy find lots of things
-" open fzf in a terminal buffer, with values loaded in from different sources
-" <Leader>a        fzf search with ag
+" Search and replace with special swoop buffer
+" Scopes to either the current buffer, or all loaded buffers. Opens a swoop
+" buffer, which lists all lines which include the search term. When the swoop
+" buffer is saved, any changes are applied to corresponding buffers.
+" <Leader>s          swoop current buffer
+" {Visual}<Leader>s  swoop selection in current buffer
+" <Leader>S          swoop multi buffers
+" {Visual}<Leader>S  swoop selection in multi buffers
+" {Swoop}:w          save changes in swoop buffer to all related lines
+" {Swoop}<CR>        save changes in swoop buffer and go to selected line
+Plug 'pelodelfuego/vim-swoop'
+let g:swoopUseDefaultKeyMap = 0
+
+" Briefly highlight yanked text
+Plug 'machakann/vim-highlightedyank'
+augroup my_yank_highlights
+  au!
+  autocmd ColorScheme * hi link HighlightedyankRegion DGrey
+augroup END
+
+" Fuzzy find lots of things
+" Open fzf in a terminal buffer, with values loaded in from different sources.
+" Install fzf locally to vim, instead or globally on the system.
+" <Leader>a        fzf search with ag (search all text in project)
 " <Leader>b        fzf search buffers
-" <Leader>f        fzf search files in current git repo
+" <Leader>f        fzf search text in all open buffers ([f]ind text)
 " <Leader>gc       fzf search git commits
+" <Leader>gr       fzf search all files in current git repo
+" <Leader>gs       fzf search `git status`, meaning files with unstaged changes
 " <Leader>h        fzf search opened files history
-" <Leader>o        fzf search all files (open file)
-" <Leader>s        fzf search lines in all open buffers
-" <Leader>t        fzf search ctags
-" <Leader>w        fzf search working, meaning files with unstaged git changes
-" <Leader>z        fzf search helptags
+" <Leader>o        fzf search all files under working directory ([o]pen a file)
+" <Leader>z        fzf search ctags (ctag[z])
+" <Leader>Z        fzf search helptags (helptag[Z])
+" {FZF}<Tab>       select multiple results to open
+" {FZF}<C-t>       open in new tab
+" {FZF}<C-s>       open in horizontal split
+" {FZF}<C-v>       open in vertical split
 Plug 'junegunn/fzf', { 'dir': '~/.config/nvim/fzf', 'do': './install --bin' }
 Plug 'junegunn/fzf.vim'
 let g:fzf_action = {
@@ -143,11 +201,12 @@ let g:fzf_action = {
   \ 'ctrl-s': 'split',
   \ 'ctrl-v': 'vsplit' }
 
-" end syntax structures automatically
+" End syntax structures automatically
 Plug 'tpope/vim-endwise'
 
-" rails navigation
-" misc helpers for navigating rails apps
+" Rails navigation
+" Misc helpers for navigating rails apps.
+" TODO: create way to cycle between related files
 " gf               edit file under cursor
 " ":Rpreview"      open webpage for file
 " ":A"             edit 'alternate' file (usually test)
@@ -155,47 +214,107 @@ Plug 'tpope/vim-endwise'
 " ":E*"            starts many commands for editing different types of files
 Plug 'tpope/vim-rails'
 
-" program linting
-" run linters asynchronously, populate the location list with errors
+" Program linting
+" Run linters asynchronously, populate the location list with errors.
+" TODO: Find a better solution than highlighting lines
+" TODO: add elixir, javascript, coffeescript, erb, elm
 Plug 'neomake/neomake'
 autocmd! BufWritePost * Neomake
 let g:neomake_ruby_enabled_makers = ['mri', 'rubocop']
 let g:neomake_ruby_rubocop_maker = { 'args': ['-c', '.rubocop_ci.yml'] }
 let g:neomake_place_signs = 0
 let g:neomake_verbose = 1
+let g:neomake_highlight_lines = 1
+augroup my_neomake_highlights
+  au!
+  autocmd ColorScheme *
+        \ hi link NeomakeError SpellBad |
+        \ hi link NeomakeWarning SpellCap
+augroup END
 
-" toggle location and quickfix lists
+" Toggle location and quickfix lists
+" TODO: set height of window
+" TODO: it looks like swoop if hijacking local list toggle. Why?
 " <Leader>l        toggle location list
 " <Leader>q        toggle quickfix list
 Plug 'Valloric/ListToggle'
 
-" basic syntax/indent/compiler support for many popular languages
+" Basic syntax/indent/compiler support for many popular languages
 Plug 'sheerun/vim-polyglot'
+let g:polyglot_disabled = ['elm']
 
-" auto generate and manage ctags
+" Auto generate and manage ctags
 Plug 'ludovicchabant/vim-gutentags'
 
-" view and navigate the undo tree
+" View and navigate the undo tree
 " <Leader>u        toggle undo tree
+" {Undotree}?      show hotkeys and quick help
 Plug 'mbbill/undotree'
 
-" additional text objects
-" l               text object for a whole line or text in a line
-" e               text object for entire buffer, with/without trailing new lines
-" c               text object for a whole comment or the comment's contents
-" v               text object for part of a variable, snake_case or camelCase
+" Additional text objects
+" l                text object for a whole line or text in a line
+" e                text object for entire buffer, with/without trailing new lines
+" c                text object for a whole comment or the comment's contents
+" v                text object for part of a variable, snake_case or camelCase
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-line'
 Plug 'kana/vim-textobj-entire'
 Plug 'glts/vim-textobj-comment'
 Plug 'Julian/vim-textobj-variable-segment'
 
+" Autocomplete menu
+" I don't like getting suggestions all the time, so I disable the autocomplete
+" feature, and call deplete manually with tab. This overrides the tab key in
+" insert mode.
+" {Instert}<Tab>  show popup menu with completion suggestions
+" {Pmenu}<Tab>    scroll through completion suggestions
 Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
 let g:deoplete#enable_at_startup = 1
 if !exists('g:deoplete#omni#input_patterns')
   let g:deoplete#omni#input_patterns = {}
 endif
 let g:deoplete#disable_auto_complete = 1
+let g:deoplete#enable_ignore_case = 0
+let g:deoplete#tag#cache_limit_size = 5000000
+let g:deoplete#sources = {}
+let g:deoplete#sources._ = ['buffer', 'tag', 'omni']
+
+" Better terminal integration
+" Use neovim terminal to run tests with vim-test. Starts the terminal out
+" small, use '<Leader>=' to resize windows for more space.
+" <Leader><tab>    toggle a terminal open/close
+" <Leader>RR       send the current line or visual selection to a REPL
+" <Leader>RF       send the current file to a REPL
+Plug 'kassio/neoterm'
+let g:neoterm_size = 15
+let g:neoterm_autoinsert = 1
+let g:neoterm_use_relative_path = 1
+let g:neoterm_repl_ruby = 'pry'
+
+" Test integration
+" For my current rails project all tests go through a hacked version of 'm',
+" but in general I wouldn't want to override the test executables.
+" <Leader>tt       test this (run test under cursor)
+" <Leader>tf       test file
+" <Leader>ts       test suite
+" <Leader>tl       test last
+" <Leader>tg       test go (return to last ran test)
+Plug 'janko-m/vim-test'
+let test#strategy = "neoterm"
+let g:test#ruby#rspec#executable = 'm'
+let g:test#ruby#minitest#executable = 'm'
+
+" Elm
+" Run elm-format after saving a buffer. Uses the local leader "," for
+" langauage specific bindings.
+Plug 'elmcast/elm-vim'
+let g:elm_setup_keybindings = 0
+let g:elm_format_autosave = 1
+" <LocalLeader>d  shows the docs for the word under the cursor
+" <LocalLeader>D  opens web browser to docs for the word under the cursor
+" <LocalLeader>e  shows details for error selected in quickfix menu
+" <LocalLeader>m  compiles current buffer
+
 
 call plug#end()
 
@@ -211,13 +330,28 @@ call plug#end()
 
 colorscheme my_theme_light
 
+" formated string to display quickfix/location list counts in statusline
+" TODO: Fix this monster
+function! AddQFCountDisplay()
+  let qf = len(getqflist())
+  let ll = len(getloclist(0))
+  let g:qf_ll_status = 'QF ' . qf . ', LL ' . ll
+  if qf > 0 || ll > 0
+    set statusline+=%#error#
+    set statusline+=%{g:qf_ll_status}
+    set statusline+=%*
+  else
+    set statusline+=%{g:qf_ll_status}
+  endif
+endfunc
+
 set statusline=%<                       " truncate from start
 set statusline+=%f\                     " full filepath
 set statusline+=%{GitBranchDisplay()}   " git branch
 set statusline+=%h%q%w                  " tags: help, quickfix, preview
 set statusline+=%m%r                    " tags: modified, read only
 set statusline+=%=                      " right align
-set statusline+=%{QFCountDisplay()}     " quickfix and location list counts
+call AddQFCountDisplay()                " quickfix and location list counts
 set statusline+=%12(%l,%c%)%5p%%        " line and col number, % through file
 
 
@@ -244,8 +378,10 @@ set statusline+=%12(%l,%c%)%5p%%        " line and col number, % through file
 "   cor            toggle relative line numbers
 "   cos            toggle spell check
 "   cow            toggle wrap
+"   co|            toggle colorcolumn at column 81
 noremap C "_c
 noremap CC "_cc
+nnoremap co<bar> :call <SID>ToggleColorColumn()<CR>
 
 " d{motion}        delete text
 " dd               delete line
@@ -294,12 +430,16 @@ noremap gz zz
 " H                jump high, move cursor to top of window
 " <A-h>            previous buffer
 " {Insert}<A-h>    previous buffer, leave insert mode
+" {Term}<A-h>      previous buffer
 " <C-h>            focus window left
 " {Insert}<C-h>    focus window left, leave insert mode
+" {Term}<C-h>      focus window left
 nnoremap <A-h> :bprevious<CR>
 inoremap <A-h> <ESC>:bprevious<CR>
+tnoremap <A-h> <C-\><C-n>:bprevious<CR>
 nnoremap <C-h> <C-w>h
 inoremap <C-h> <ESC><C-w>h
+tnoremap <C-h> <C-\><C-n><C-w>h
 
 " i                insert before cursor
 " I                insert at beginning of line
@@ -307,41 +447,49 @@ inoremap <C-h> <ESC><C-w>h
 
 " j                down
 " J                down 3 lines
-" <A-j>            down through wrapped line
 " <C-j>            focus window below
 " {Insert}<C-j>    focus window below, leave insert mode
+" {Term}<C-j>      focus window below
 nnoremap J jjj
 vnoremap J jjj
-nnoremap <A-j> gj
 nnoremap <C-j> <C-w>j
 inoremap <C-j> <ESC><C-w>j
+tnoremap <C-j> <C-\><C-n><C-w>j
 
 " k                up
 " K                up 3 lines
 " <A-k>            up through wrapped line
 " <C-k>            focus window above
 " {Insert}<C-k>    focus window above, leave insert mode
+" {Term}<C-k>      focus window above
 nnoremap K kkk
 vnoremap K kkk
 nnoremap <A-k> gk
 nnoremap <C-k> <C-w>k
 inoremap <C-k> <ESC><C-w>k
+tnoremap <C-k> <C-\><C-n><C-w>k
 
 " l                right
 " L                jump low, move cursor to bottom of window
 " <A-l>            next buffer
 " {Insert}<A-l>    next buffer, leave insert mode
+" {Term}<A-l>      next buffer
 " <C-l>            focus window right
 " {Insert}<C-l>    focus window right, leave insert mode
+" {Term}<C-l>      focus window right
 nnoremap <A-l> :bnext<CR>
 inoremap <A-l> <ESC>:bnext<CR>
+tnoremap <A-l> <C-\><C-n>:bnext<CR>
 nnoremap <C-l> <C-w>l
 inoremap <C-l> <ESC><C-w>l
+tnoremap <C-l> <C-\><C-n><C-w>l
 
 " m{a-Z}           set mark char, where a-z marks in buffer, A-Z cross-buffers
 " M                jump middle, move cursor to middle line
-" mm               set mark m (jump with <Leader>m)
-" mn               set mark n (jump with <Leader>n)
+" mm               set mark M (jump with <Leader>m)
+" mn               set mark N (jump with <Leader>n)
+noremap mm mM
+noremap mn mN
 
 " n                jump to next search result
 " N                jump to previous search result
@@ -399,7 +547,8 @@ noremap X "_X
 " y                yank/copy text
 " {Visual}y        yank selection, place cursor at end of selection
 " Y                join two lines (Y looks like two lines joining into one)
-vnoremap <silent> y y`]
+map y <Plug>(highlightedyank)
+"vnoremap <silent> y y`]
 noremap Y J
 
 " z{*}             manage folds
@@ -515,21 +664,25 @@ nnoremap <Leader>c <C-w><C-q>
 " <Leader>d  delete this buffer from buffer list, keep split/window
 nnoremap <Leader>d :bp<bar>sp<bar>bn<bar>bd<CR>
 
-" <Leader>e  refresh buffer
-nnoremap <silent> <Leader>e :e<CR>
+" <Leader>e  edit any file, fzf search all files under home (except hidden dirs)
+nnoremap <silent> <Leader>e :Files ~<CR>
 
-" <Leader>f  fzf search files in project/git repo
-nnoremap <silent> <Leader>f :GFiles<CR>
+" <Leader>f  find text, fzf search all open buffers
+nnoremap <Leader>f :Lines<CR>
 
 " <Leader>g{*}  git bindings
 "   <Leader>gb  fugitive git blame
 "   <Leader>gc  fzf search git commits
 "   <Leader>gd  fugitive git diff
-"   <Leader>gs  fugitive git status
+"   <Leader>gm  open magit
+"   <Leader>gr  fzf search all files in current git repo
+"   <Leader>gs  fzf search `git status`, meaning files with unstaged changes
 nnoremap <silent> <Leader>gb :Gblame<CR>
 nnoremap <silent> <Leader>gc :Commits<CR>
 nnoremap <silent> <Leader>gd :Gdiff<CR>
-nnoremap <silent> <Leader>gs :Gstatus<CR>
+nnoremap <silent> <Leader>gm :Magit<CR>
+nnoremap <silent> <Leader>gr :GFiles<CR>
+nnoremap <silent> <Leader>gs :GFiles?<CR>
 
 " <Leader>h  fzf search opened files history
 nnoremap <silent> <Leader>h :History<CR>
@@ -539,35 +692,61 @@ nnoremap <silent> <Leader>h :History<CR>
 " <Leader>I  show vim syntax highlighting groups for word under cursor
 nnoremap <Leader>I :call <SID>SynStack()<CR>
 
-" <Leader>j reformat/wrap the current paragraph/selection (join text lines)
-nnoremap <Leader>j gqip
-vnoremap <Leader>j gq
+" <Leader>j  TODO
 
 " <Leader>k  TODO
 
 " <Leader>l  toggle location list
+" default ListToggle plugin binding
 
-" <Leader>m  jump to mark m
-nnoremap <Leader>m 'm
+" <Leader>m  jump to mark M
+nnoremap <Leader>m 'M
 
-" <Leader>n  jump to mark n
-nnoremap <Leader>n 'n
+" <Leader>n  jump to mark N
+nnoremap <Leader>n 'N
 
-" <Leader>o  fzf search all files (open a file)
+" <Leader>o  open a file, fzf search all files under working directory
 nnoremap <silent> <Leader>o :Files<CR>
 
-" <Leader>p  TODO
+" <Leader>p  fzf search current project, meaning current git repo
+nnoremap <silent> <Leader>p :GFiles<CR>
 
 " <Leader>q  toggle the quickfix list
+" default ListToggle plugin binding
 
-" <Leader>r  rot13 file
-noremap <Leader>r ggg?G``
+" <Leader>r             rot13 file
+" {Visual}<Leader>r     rot13 selection
+" <Leader>R{*}          neoterm REPL
+"   <Leader>RR          send the current line to a REPL
+"   {Visual}<Leader>RR  send selection to a REPL
+"   <Leader>RF          send the current file to a REPL
+nnoremap <Leader>r ggg?G``
+vnoremap <Leader>r g?
+nnoremap <Leader>RR :TREPLSendLine<CR>
+vnoremap <Leader>RR :TREPLSendSelection<CR>
+nnoremap <Leader>RF :TREPLSendFile<CR>
 
-" <Leader>s  fzf search lines in all open buffers
-nnoremap <Leader>s :Lines<CR>
+" <Leader>s          swoop current buffer
+" {Visual}<Leader>s  swoop selection in current buffer
+" <Leader>S          swoop multi buffers
+" {Visual}<Leader>S  swoop selection in multi buffers
+nmap <Leader>s :call Swoop()<CR>
+vmap <Leader>s :call SwoopSelection()<CR>
+nmap <Leader>S :call SwoopMulti()<CR>
+vmap <Leader>S :call SwoopMultiSelection()<CR>
 
-" <Leader>t  fzf search ctags
-nnoremap <silent> <Leader>t :Tags<CR>
+
+" <Leader>t{*}  test bindings
+"   <Leader>tt  test this (run test under cursor)
+"   <Leader>tf  test file
+"   <Leader>ts  test suite
+"   <Leader>tl  test last
+"   <Leader>tg  test go (return to last ran test)
+nnoremap <silent> <leader>tt :TestNearest<CR>
+nnoremap <silent> <leader>tf :TestFile<CR>
+nnoremap <silent> <leader>ts :TestSuite<CR>
+nnoremap <silent> <leader>tl :TestLast<CR>
+nnoremap <silent> <leader>tg :TestVisit<CR>
 
 " <Leader>u  toggle undotree
 nnoremap <Leader>u :UndotreeToggle<CR>
@@ -575,8 +754,13 @@ nnoremap <Leader>u :UndotreeToggle<CR>
 " <Leader>v  vertical split
 noremap <Leader>v :vsplit<CR>
 
-" <Leader>w  fzf search working files, meaning files with unstaged git changes
-nnoremap <silent> <Leader>w :GFiles?<CR>
+" <Leader>V  horizontal split
+noremap <Leader>V :split<CR>
+
+" <Leader>w         wrap/reformat the current line
+" {Visual}<Leader>w wrap/reformat selection
+nnoremap <Leader>w gqq
+vnoremap <Leader>w gq
 
 " <Leader>x  close all but current window
 nnoremap <Leader>x <C-w>o
@@ -587,16 +771,51 @@ nnoremap <Leader>y <ESC>:execute "normal \<Plug>Ysurround"<CR>g@iw
 " <Leader>Y{c}  surround a WORD with {c}
 nnoremap <Leader>Y <ESC>:execute "normal \<Plug>Ysurround"<CR>g@iW
 
-" <Leader>z  fzf search helptags (helptagz?)
-noremap <Leader>z :Helptags<CR>
+" <Leader>z  fzf search ctags (ctag[z])
+" <Leader>Z  fzf search helptags (helptag[Z])
+nnoremap <silent> <Leader>z :Tags<CR>
+nnoremap <silent> <Leader>Z :Helptags<CR>
 
-" <Leader>=  vertically resize to split windows evenly
+" <Leader>=  resize windows to split evenly
 nnoremap <Leader>= <C-w>=
+
+" <Leader>|  vertical split
+noremap <Leader><Bar> :vsplit<CR>
+
+" <Leader>_  horizontal split
+noremap <Leader>_ :split<CR>
 
 " <Leader><Leader>  switch between current and last buffer
 nnoremap <Leader><Leader> <c-^>
 
-" <Leader><tab>  TODO
+" <Leader><tab>        toggle a terminal open/close
+" {Term}<Leader><tab>  toggle a terminal open/close
+nnoremap <leader><tab> :Ttoggle<CR>
+tnoremap <leader><tab> <C-\><C-n>:Ttoggle<CR>
+
+" {Term}<Leader><ESC>  switch from terminal mode to reading terminal as buffer
+tnoremap <Leader><ESC> <C-\><C-n>
+
+
+"===============================================================================
+" Local Leader Bindings
+" Bindings for a specific file type
+"===============================================================================
+
+let maplocalleader = ","
+
+" Elm
+
+" <LocalLeader>d  shows the docs for the word under the cursor
+" <LocalLeader>D  opens web browser to docs for the word under the cursor
+au FileType elm nmap <LocalLeader>d <Plug>(elm-show-docs)
+au FileType elm nmap <LocalLeader>D <Plug>(elm-browse-docs)
+
+" <LocalLeader>e  shows details for error selected in quickfix menu
+au FileType elm nmap <LocalLeader>e <Plug>(elm-error-detail)
+
+" <LocalLeader>m  compiles current buffer
+au FileType elm nmap <LocalLeader>m <Plug>(elm-make)
 
 
 "===============================================================================
@@ -605,17 +824,18 @@ nnoremap <Leader><Leader> <c-^>
 
 " i{*}             inner/inside text object
 " a{*}             a/all of text object, includes surrounding whitespace
+"   c              comment
+"   e              entire buffer
+"   l              line
+"   p              paragraph
+"   s              sentence
+"   t              html tags
+"   v              variable segment, either snake_case or camelCase
 "   w              word
 "   W              WORD
-"   l              line
-"   s              sentence
-"   p              paragraph
-"   t              html tags
 "   [ or ], ( or ),
 "   < or >, { or } matching pairs
 "   `, ", '        matching quotes
-"   c              comment
-"   v              variable segment, either snake_case or camelCase
 
 
 "===============================================================================
@@ -625,6 +845,8 @@ nnoremap <Leader><Leader> <c-^>
 
 " grab the buffer list and slap it all into the current buffer
 command! Bufdump call <SID>DumpBuffers()
+
+command! TCC call <SID>ToggleColorColumn()
 
 " plug starts with ":Plug*", includes Install, Clean, Update, Upgrade
 
@@ -653,11 +875,10 @@ set tabstop=2                " render TABs using this many spaces
 set shiftwidth=2             " indentation amount for < and > commands
 set noerrorbells             " no beeps
 set nomodeline               " disable modeline
-set nojoinspaces             " prevents inserting two spaces on a join (J)
+set nojoinspaces             " prevents inserting two spaces on a join (Y)
 set ignorecase               " make searching case insensitive...
 set smartcase                " ... unless the query has capital letters
-set wrap                     " word wrap instead of wrap by character
-set colorcolumn=81           " highlight column 81
+set nowrap                   " don't wrap text, use "cow" to toggle line wrap
 set list                     " highlight tabs and trailing spaces
 set listchars=tab:>·,trail:· " symbols to display for tabs and trailing spaces
 set scrolloff=3              " show next 3 lines while scrolling
@@ -667,9 +888,9 @@ set splitright               " vertical split opens to right of active window
 set shortmess+=I             " Don't show the intro
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
-set title                    " set terminal title to current buffer file name
 
 
+command! Bufdump call <SID>DumpBuffers()
 "===============================================================================
 " Metadata
 " I manage meta files by keeping them all under '.config/nvim/tmp/'.
@@ -718,6 +939,10 @@ augroup reload_vimrc
     autocmd BufWritePost $MYVIMRC source $MYVIMRC
 augroup END
 
+" elm uses 4 spaces to indent
+autocmd FileType elm setlocal tabstop=4
+autocmd FileType elm setlocal shiftwidth=4
+
 
 "===============================================================================
 " Helper Functions
@@ -749,7 +974,11 @@ function! GitBranchDisplay()
   return str
 endfunc
 
-" formated string to display quickfix/location list counts in statusline
-function! QFCountDisplay()
-  return 'QF ' . len(getqflist()) . ', LL ' . len(getloclist(0))
+
+function! <SID>ToggleColorColumn()
+  if &colorcolumn != ''
+    setlocal colorcolumn&
+  else
+    setlocal colorcolumn=81
+  endif
 endfunc
