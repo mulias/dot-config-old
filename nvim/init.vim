@@ -6,7 +6,7 @@
 "
 " Vim Compatibility
 " This config is only intended to work for neovim. If I only have access to
-" standard vim, I use a minimal config with the addition of the plugin
+" standard vim then I use a minimal config with the addition of the plugin
 " 'tpope/vim-sensible'.
 "
 " Setup
@@ -62,15 +62,16 @@ augroup END
 
 call plug#begin(g:nvim_config_dir . '/plugged')
 
-" Fuzzy find lots of things
+" Search and Navigate with fuzzy find
 " Open fzf in a terminal buffer, with values loaded in from different sources.
-" Install fzf locally to vim, instead or globally on the system.
+" Installs fzf locally to vim, instead or globally on the system.
 " <Leader>a        fzf search with ag (search all text in project)
 " <Leader>A        fzf search for word under cursor with ag
 " <Leader>b        fzf search buffer list
 " <Leader>e        fzf search all files under home dir
 " <Leader>gc       fzf search git commits
 " <Leader>gf       fzf search all files in current git repo (alias '<leader>p')
+" <Leader>gh       fzf search git commits for buffer (buffer's git history)
 " <Leader>gs       fzf search `git status`, meaning files with unstaged changes
 " <Leader>h        fzf search recently opened files history
 " <Leader>p        fzf search current project, meaning current git repo
@@ -78,7 +79,7 @@ call plug#begin(g:nvim_config_dir . '/plugged')
 " <Leader>Z        fzf search helptags (helptag[Z])
 " <Leader>/        fzf search current buffer
 " <Leader>*        fzf search current buffer for text under cursor
-" {FZF}<Tab>       select multiple results to open
+" {FZF}<TAB>       select multiple results to open
 " {FZF}<C-t>       open in new tab
 " {FZF}<C-s>       open in horizontal split
 " {FZF}<C-v>       open in vertical split
@@ -101,10 +102,10 @@ let g:neoformat_enabled_ruby = ['rufo']
 autocmd vimrc BufWritePre * Neoformat
 
 " Linting
-" ALE will automatically find and use linters installed on your system, unless
-" 'g:ale_linters' is set otherwise. I dislike distractions while typing, so
-" ALE only runs linters on a buffer when it's first opened and when it's
-" saved.
+" Find and run code linters on buffer write. Populates the location list with
+" errors and warning for the current buffer. ALE will automatically find and
+" use linters installed on your system, unless 'g:ale_linters' is set
+" otherwise. ALE can be set to lint as you type, but I find that distracting.
 " <Leader>i        linting info related to error on line
 " :ALELint         manually run linters
 " :ALEToggle       turn ALE on/off for current buffer
@@ -119,7 +120,7 @@ let g:ale_set_signs = 0
 let g:ale_lint_on_text_changed = 'never'
 let g:ale_lint_on_insert_leave = 0
 let g:ale_lint_on_enter = 1
-let ale_lint_on_save = 1
+let g:ale_lint_on_save = 1
 let g:ale_ruby_rubocop_options = '-c .rubocop_ci.yml'
 
 " Toggle location and quickfix lists
@@ -127,10 +128,12 @@ let g:ale_ruby_rubocop_options = '-c .rubocop_ci.yml'
 " <Leader>q        toggle quickfix list
 Plug 'Valloric/ListToggle'
 
-" Completion Menu
-" I don't like getting suggestions all the time, so I disable the autocomplete
-" feature, and call NCM manually with tab. This overrides the tab key in
-" insert mode, so shift-tab is a normal insert.
+" Completion
+" Provides a dropdown menu with completion suggestions. The menu is populated
+" with keywords from open vim buffers, project ctags, tmux panes, file paths,
+" snippet plugins like Ultisnips, and NCM language specific plugins. NCM can
+" be set to make suggestions as you type, but I prefer to call NCM manually
+" with <TAB>.
 " {Insert}<Tab>    open popup menu with completion suggestions
 " {Insert}<S-Tab>  insert the tab character
 " {Pmenu}<Tab>     scroll down through completion suggestions
@@ -140,7 +143,7 @@ let g:cm_auto_popup = 0
 
 " Language Specific Completion
 " Extensions to NCM for specific languages.
-Plug 'roxma/ncm-rct-complete'    " ruby via rcodetools
+Plug 'roxma/ncm-rct-complete'    " ruby via rcodetools, does not support rails
 Plug 'calebeby/ncm-css'          " css, scss, sass, etc.
 Plug 'roxma/ncm-elm-oracle'      " elm via elm-oracle
 
@@ -187,7 +190,7 @@ Plug 'junegunn/gv.vim'
 " zo               open a fold
 " zc               close a fold
 " zi               toggle fold
-Plug 'jreybert/vimagit', { 'on' : ['Magit', 'MagitOnly'] }
+Plug 'jreybert/vimagit'
 
 " Simple file browser
 " -                open file beagle in buffer directory
@@ -195,9 +198,35 @@ Plug 'jreybert/vimagit', { 'on' : ['Magit', 'MagitOnly'] }
 " {FileBeagle}q    return to buffer FB was called from
 " {FileBeagle}<CR> go to directory/edit file under cursor
 " show hidden files and dirs, suppress the default binding of <Leader>f
-Plug 'jeetsukumaran/vim-filebeagle', { 'on' : ['FileBeagleBufferDir', 'FileBeagle'] }
+Plug 'jeetsukumaran/vim-filebeagle'
 let g:filebeagle_show_hidden = 1
 let g:filebeagle_suppress_keymaps = 1
+
+" Test integration
+" For my current rails project all tests go through a hacked version of 'm',
+" but in general I wouldn't want to override the test executables.
+" <Leader>tt       test this (run test under cursor)
+" <Leader>tf       test file
+" <Leader>ts       test suite
+" <Leader>tl       test last
+" <Leader>tg       test go (return to last ran test)
+Plug 'janko-m/vim-test'
+let g:test#strategy = 'neoterm'
+let g:test#ruby#rspec#executable = 'm'
+let g:test#ruby#minitest#executable = 'm'
+
+" Better terminal integration
+" Use neovim terminal to run tests with vim-test. Starts the terminal out
+" small, use '<Leader>=' to resize windows for more space.
+" <Leader><TAB>    toggle a terminal open/close
+" <leader><ESC>    leave terminal mode and treat terminal as read-only buffer
+" <Leader>RR       send the current line or visual selection to a REPL
+" <Leader>RF       send the current file to a REPL
+Plug 'kassio/neoterm'
+let g:neoterm_size = 15
+let g:neoterm_autoinsert = 1
+let g:neoterm_use_relative_path = 1
+let g:neoterm_repl_ruby = 'pry'
 
 " Smart commenting
 " gc{motion}       toggle commenting on lines that {motion} moves over
@@ -232,7 +261,7 @@ let g:sneak#absolute_dir = 1
 autocmd vimrc ColorScheme * hi! link Sneak Search
 autocmd vimrc ColorScheme * hi! link SneakScope Visual
 
-" Useful pairs of keybindings, change vim settings
+" Useful pairs of keybindings, toggle vim settings
 " [b, [B, ]b, ]B   previous, first, next, last buffer
 " [l, [L, ]l, ]L   previous, first, next, last local list entry
 " [q, [Q, ]q, ]Q   previous, first, next, last quickfix list entry
@@ -272,7 +301,7 @@ Plug 'tpope/vim-endwise'
 " View and navigate the undo tree
 " <Leader>u        toggle undo tree
 " {Undotree}?      show hotkeys and quick help
-Plug 'mbbill/undotree', { 'on' : 'UndotreeToggle' }
+Plug 'mbbill/undotree'
 let g:undotree_SetFocusWhenToggle = 1
 
 " Additional text objects
@@ -286,60 +315,51 @@ Plug 'kana/vim-textobj-entire'
 Plug 'glts/vim-textobj-comment'
 Plug 'Julian/vim-textobj-variable-segment'
 
-" Test integration
-" For my current rails project all tests go through a hacked version of 'm',
-" but in general I wouldn't want to override the test executables.
-" <Leader>tt       test this (run test under cursor)
-" <Leader>tf       test file
-" <Leader>ts       test suite
-" <Leader>tl       test last
-" <Leader>tg       test go (return to last ran test)
-Plug 'janko-m/vim-test'
-let g:test#strategy = 'neoterm'
-let g:test#ruby#rspec#executable = 'm'
-let g:test#ruby#minitest#executable = 'm'
-
-" Better terminal integration
-" Use neovim terminal to run tests with vim-test. Starts the terminal out
-" small, use '<Leader>=' to resize windows for more space.
-" <Leader><tab>    toggle a terminal open/close
-" <Leader>RR       send the current line or visual selection to a REPL
-" <Leader>RF       send the current file to a REPL
-Plug 'kassio/neoterm'
-let g:neoterm_size = 15
-let g:neoterm_autoinsert = 1
-let g:neoterm_use_relative_path = 1
-let g:neoterm_repl_ruby = 'pry'
-
-" Basic syntax/indent/compiler support for many popular languages
+" Syntax/indent/compiler support
+" Provides general functionality for many popular file types. Best used for
+" languages that are rarely needed, or require no special functionality.
+" Commonly used languages should be required separately and explicitly
+" disabled for polyglot.
 Plug 'sheerun/vim-polyglot'
-let g:polyglot_disabled = ['elm']
+let g:polyglot_disabled = [
+  \ 'elm',
+  \ 'ruby',
+  \ 'javascript'
+\ ]
 
-" Rails navigation
-" Misc helpers for navigating rails apps.
+" Elm
+" Integrate with elm tooling. These features require that the vim root
+" directory is also the base directory of the elm project. If vim is opened
+" from the elm project's 'src/' then elm-make and elm-oracle will fail.
+" :ElmMake         compile the current file
+" :ElmMakeMain     compile 'Main.elm'
+" :ElmTest         run all tests, for specific files use vim-test
+" :ElmFormat       run elm-format manually, instead of waiting for neoformat
+" <LocalLeader>m   compile current file
+" <LocalLeader>M   compile 'Main.elm'
+" <LocalLeader>t   run all tests
+" <LocalLeader>f   formal buffer
+" <LocalLeader>d   shows the docs for the word under the cursor
+" <LocalLeader>D   opens web browser to docs for the word under the cursor
+Plug 'elmcast/elm-vim'
+let g:elm_setup_keybindings = 0
+
+" Javascript
+Plug 'pangloss/vim-javascript'
+let g:javascript_plugin_flow = 1
+
+" Ruby
+Plug 'vim-ruby/vim-ruby'
+
+" Rails
+" Many different helper tools for rials apps. I only really use the navigation
+" shortcuts.
 " gf               go to rails file under cursor
 " :Rpreview        open webpage for file
 " :A               edit 'alternate' file (usually test)
 " :R               edit 'related' file (depends)
 " :E*              starts many commands for editing different types of files
-" <LocalLeader>m   go to model directory
-" <LocalLeader>v   go to view directory
-" <LocalLeader>c   go to controller directory
-Plug 'tpope/vim-rails', { 'for' : 'ruby' }
-
-" Elm
-" Run elm-format after saving a buffer, integrate with elm tools. These
-" features require that the vim root directory is also the base directory of
-" the elm project. If vim is opened from the elm project's 'src/' then
-" elm-make and elm-oracle will fail.
-" <LocalLeader>d  shows the docs for the word under the cursor
-" <LocalLeader>D  opens web browser to docs for the word under the cursor
-" <LocalLeader>e  shows details for error selected in quickfix menu
-" <LocalLeader>m  compiles current buffer
-Plug 'elmcast/elm-vim', { 'for' : 'elm' }
-let g:elm_setup_keybindings = 0
-let g:elm_format_autosave = 0
-let g:elm_detailed_complete = 1
+Plug 'tpope/vim-rails'
 
 " ColorSchemes
 " Some nice colorschemes, most of which require true color.
@@ -401,6 +421,7 @@ set statusline+=%12(%l,%c%)%5p%%          " line and col number, % through file
 " J                down 3 lines
 " K                up 3 lines
 " L                right 3 columns
+" Q                @q, execute the macro in register q
 " U                redo
 " x                delete char forward, don't save to register
 " X                delete char backward, don't save to register
@@ -499,7 +520,7 @@ tnoremap <C-h> <C-\><C-n><C-w>h
 
 " j                down
 " J                down 3 lines
-" <A-k>            down through wrapped line
+" <A-j>            down through wrapped line
 " <C-j>            focus window below
 " {Insert}<C-j>    focus window below, leave insert mode
 " {Term}<C-j>      focus window below
@@ -595,8 +616,8 @@ nnoremap U <C-r>
 " w                move word forward
 " W                move WORD forward
 
-" x                delete char forward, don't clobber register
-" X                delete char backward, don't clobber register
+" x                delete char forward, don't save to register
+" X                delete char backward, don't save to register
 noremap x "_x
 noremap X "_X
 
@@ -611,6 +632,7 @@ noremap Y J
 "   zc             close fold
 "   zd             delete fold
 "   zf             create fold with motion
+"   zi             toggle all folds in buffer
 "   zo             open fold
 " zz               center window on cursor
 " ZZ               save and exit
@@ -618,14 +640,14 @@ noremap Y J
 
 " [{*}             back list entry actions
 "   [b, [B         previous, first buffer
-"   [l, [L         previous, first local list entry
+"   [l, [L         previous, first location list entry
 "   [q, [Q         previous, first quickfix list entry
 "   [t, [T         previous, first tag stack entry
 "   [s             previous misspelled word
 "   [e             previous change list entry
 " ]{*}             forward list entry actions
 "   ]b, ]B         next, last buffer
-"   ]l, ]L         next, last local list entry
+"   ]l, ]L         next, last location list entry
 "   ]q, ]Q         next, last quickfix list entry
 "   ]t, ]T         next, last tag stack entry
 "   ]s             next misspelled word
@@ -638,7 +660,6 @@ noremap Y J
 " <A-]>            next jump list location
 " <C-]>            follow ctag
 " <C-[>            <ESC>
-" ]]               next
 nnoremap [e g;
 nnoremap ]e g,
 nnoremap <A-[> <C-o>
@@ -675,11 +696,19 @@ vnoremap ; :
 " ==               auto indent
 " {Visual}=        auto indent selection
 
-" "[x]{ydxcp}      use register [x] for next yank, delete, or paste
-" "[X]{ydxcp}      append text to register [x] for next yank or delete
+" "{r}{y/d/c/p}    use register {r} for next yank, delete, or paste
+" "{r}{y/d/c/p}    store text to register {r} for next yank or delete
+" ""               default register, '""y' is equivalent to 'y'
+" "{a-z}           named registers for manual use
+" "_               black hole/trash register
+" ".               contains last inserted text
+" "%               contains name of current file
+" "#               contains name of alternate file
+" ":               contains most recently executed command
+" "/               contains last search
 
-" '{a-Z}           jump to mark, start of line
-" `{a-Z}           jump to mark, line and column position
+" '{a-Z}           jump to mark {a-Z}, start of line
+" `{a-Z}           jump to mark {a-Z}, line and column position
 
 " .                repeat last command
 " {Visual}.        repeat last command once on each line
@@ -708,8 +737,8 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<Tab>"
 
 "===============================================================================
 " Leader Bindings
-" General convenience bindings -- search integration with fzf, git integration
-" with fugitive, window management, and misc.
+" General convenience bindings -- search and navigation with fzf, git
+" integration with fugitiveand magit, window management, useful odds and ends.
 "===============================================================================
 
 " Leader
@@ -759,8 +788,12 @@ nnoremap <Leader>i :ALEDetail<CR>
 nnoremap <Leader>I :call <SID>SynStack()<CR>
 
 " <Leader>j  TODO
+" <Leader>J  swap window down
+nnoremap <Leader>J <C-w>J
 
 " <Leader>k  TODO
+" <Leader>K  swap window up
+nnoremap <Leader>K <C-w>K
 
 " <Leader>l  toggle location list, using ListToggle plugin
 " <Leader>L  swap window right
@@ -777,16 +810,14 @@ nnoremap <Leader>n 'N
 " <Leader>p  fzf search current project, meaning current git repo
 nnoremap <silent> <Leader>p :GFiles<CR>
 
-" <Leader>q  toggle the quickfix list
-" default ListToggle plugin binding
+" <Leader>q  toggle the quickfix list, using ListToggle plugin
 
-" <Leader>r             rot13 file
+" <Leader>r             TODO
 " {Visual}<Leader>r     rot13 selection
 " <Leader>R{*}          neoterm REPL
 "   <Leader>RR          send the current line to a REPL
 "   {Visual}<Leader>RR  send selection to a REPL
 "   <Leader>RF          send the current file to a REPL
-nnoremap <Leader>r ggg?G``
 vnoremap <Leader>r g?
 nnoremap <Leader>RR :TREPLSendLine<CR>
 vnoremap <Leader>RR :TREPLSendSelection<CR>
@@ -841,16 +872,16 @@ noremap <Leader>_ :split<CR>
 
 " <Leader>/  fzf search current buffer
 " <Leader>*  fzf search current buffer for text under cursor
-nnoremap <Leader>/ :Lines<CR>
-nnoremap <Leader>* :Lines <C-r><C-w><CR>
+nnoremap <Leader>/ :BLines<CR>
+nnoremap <Leader>* :BLines <C-r><C-w><CR>
 
 " <Leader><Leader>  switch between current and last buffer
 nnoremap <Leader><Leader> <c-^>
 
-" <Leader><tab>        toggle a terminal open/close
-" {Term}<Leader><tab>  toggle a terminal open/close
-nnoremap <leader><tab> :Ttoggle<CR>
-tnoremap <leader><tab> <C-\><C-n>:Ttoggle<CR>
+" <Leader><TAB>        toggle a terminal open/close
+" {Term}<Leader><TAB>  toggle a terminal open/close
+nnoremap <leader><TAB> :Ttoggle<CR>
+tnoremap <leader><TAB> <C-\><C-n>:Ttoggle<CR>
 
 " {Term}<Leader><ESC>  switch from terminal mode to reading terminal as buffer
 tnoremap <Leader><ESC> <C-\><C-n>
@@ -863,26 +894,19 @@ tnoremap <Leader><ESC> <C-\><C-n>
 
 let g:maplocalleader = ','
 
-" Ruby
-" <LocalLeader>m   go to rails model directory
-" <LocalLeader>v   go to rails view directory
-" <LocalLeader>c   go to rails controller directory
-autocmd vimrc FileType ruby nmap <LocalLeader>m :Emodel .<CR>
-autocmd vimrc FileType ruby nmap <LocalLeader>v :Eview .<CR>
-autocmd vimrc FileType ruby nmap <LocalLeader>c :Econtroller .<CR>
-
 " Elm
 " These commands require that the vim root directory is also the base
 " directory of the elm project. If vim is opened from 'src/' then elm-make and
 " elm-oracle will fail.
 " <LocalLeader>d  shows the docs for the word under the cursor
 " <LocalLeader>D  opens web browser to docs for the word under the cursor
-" <LocalLeader>e  shows details for error selected in quickfix menu
 " <LocalLeader>m  compiles current buffer
+autocmd vimrc FileType elm nmap <LocalLeader>m <Plug>(elm-make)
+autocmd vimrc FileType elm nmap <LocalLeader>M <Plug>(elm-make-main)
+autocmd vimrc FileType elm nmap <LocalLeader>t <Plug>(elm-test)
+autocmd vimrc FileType elm nmap <LocalLeader>f :ElmFormat<CR>
 autocmd vimrc FileType elm nmap <LocalLeader>d <Plug>(elm-show-docs)
 autocmd vimrc FileType elm nmap <LocalLeader>D <Plug>(elm-browse-docs)
-autocmd vimrc FileType elm nmap <LocalLeader>e <Plug>(elm-error-detail)
-autocmd vimrc FileType elm nmap <LocalLeader>m <Plug>(elm-make)
 
 
 "===============================================================================
@@ -915,11 +939,6 @@ command! TCC call <SID>ToggleColorColumn()
 
 " Download the vim-plug package manager
 command! DownloadPlug call <SID>DownloadPlug()
-
-" Git rebase interactive onto master -- open a terminal in the current window
-" and execute the git command, which then in turn opens a second nested nvim
-" instance.
-command! Grim :term git rebase -i --autosquash --autostash origin/master
 
 " Plug starts with ':Plug*', includes Install, Clean, Update, Upgrade.
 
@@ -959,6 +978,7 @@ set sidescrolloff=5          " show next 5 columns while side-scrolling
 set splitbelow               " horizontal split opens under active window
 set splitright               " vertical split opens to right of active window
 set shortmess+=I             " Don't show the intro
+set bufhidden=hide           " allow switching from an unsaved buffer
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
 
