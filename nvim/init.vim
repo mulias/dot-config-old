@@ -17,12 +17,12 @@
 "   libraries needed for Ruby, Python2, and Python3 support.
 " * FZF: Install Ag. If fzf can's find ag it falls back on grep, which is ok
 "   but not as fast.
-" * Gutentags: Install Universal Ctags, or disable gutentags.
+" * Neoformat: Install formatters for regularly used languages.
 " * ALE: Install linters for regularly used languages. Use ':ALEInfo' on a file
 "   to find out about linting that file type.
-" * NVim-Completion-Manager: Install optional pip modules `mistune`, `psutil`, and
-"   `setproctitle`. See ':h NCM-install'.
-" * Neoformat: Install formatters for regularly used languages.
+" * NVim-Completion-Manager: Install optional pip modules `mistune`, `psutil`,
+"   and `setproctitle`. See ':h NCM-install'.
+" * Gutentags: Install Universal Ctags, or disable gutentags.
 "
 " Documentation
 " The goal is to over-document, so that this file can act not only as a
@@ -62,7 +62,7 @@ augroup END
 
 call plug#begin(g:nvim_config_dir . '/plugged')
 
-" Search and Navigate with fuzzy find
+" Search and navigate with fuzzy find
 " Open fzf in a terminal buffer, with values loaded in from different sources.
 " Installs fzf locally to vim, instead or globally on the system.
 " <Leader>a        fzf search with ag (search all text in project)
@@ -98,7 +98,10 @@ let g:fzf_action = {
 Plug 'sbdchd/neoformat'
 let g:neoformat_basic_format_retab = 1
 let g:neoformat_basic_format_trim = 1
-let g:neoformat_enabled_ruby = ['rufo']
+let g:neoformat_enabled_ruby = []
+let g:neoformat_enabled_javascript = []
+let g:neoformat_enabled_css = []
+let g:neoformat_enabled_scss = []
 autocmd vimrc BufWritePre * Neoformat
 
 " Linting
@@ -112,7 +115,9 @@ autocmd vimrc BufWritePre * Neoformat
 " :ALEDetail       show expanded message for error on line
 " :ALEInfo         report available liners, settings, and linter log
 Plug 'w0rp/ale'
-let g:ale_linters = {}
+let g:ale_linters = {
+      \ 'typescript': ['tslint']
+      \}
 let g:ale_open_list = 0
 let g:ale_list_window_size = 5
 let g:ale_set_highlights = 1
@@ -143,9 +148,12 @@ let g:cm_auto_popup = 0
 
 " Language Specific Completion
 " Extensions to NCM for specific languages.
+Plug 'Shougo/neco-syntax'        " parse vim syntax files for language keywords
 Plug 'roxma/ncm-rct-complete'    " ruby via rcodetools, does not support rails
 Plug 'calebeby/ncm-css'          " css, scss, sass, etc.
 Plug 'roxma/ncm-elm-oracle'      " elm via elm-oracle
+Plug 'roxma/nvim-cm-tern', {'do': 'npm install'}   " javascript via tern
+Plug 'clojure-vim/async-clj-omni'  " clojure through nREPL
 
 " Auto generate and manage ctags
 " Requires some version of ctags, such as Exuberant Ctags or Universal Ctags.
@@ -169,9 +177,11 @@ Plug 'tpope/vim-fugitive'
 
 " Browse Git history
 " Relies on fugitive.
-" :GV             view history for the current branch in a new tab
-" :GV!            view history for the current file in a new tab
+" :GV             view history for the current branch in a new tabpage
+" :GV!            view history for the current file in a new tabpage
 " :GV?            popuilate location list with file-specific commits
+" gt              go to next tabpage
+" gT              go to previous tabpage
 Plug 'junegunn/gv.vim'
 
 " Magit in vim
@@ -203,8 +213,9 @@ let g:filebeagle_show_hidden = 1
 let g:filebeagle_suppress_keymaps = 1
 
 " Test integration
-" For my current rails project all tests go through a hacked version of 'm',
-" but in general I wouldn't want to override the test executables.
+" Run tests using the nvim terminal, with some extra conveniences provided by
+" the neoterm plugin. Test runners can be defined per language/framework, as
+" necessary.
 " <Leader>tt       test this (run test under cursor)
 " <Leader>tf       test file
 " <Leader>ts       test suite
@@ -212,8 +223,6 @@ let g:filebeagle_suppress_keymaps = 1
 " <Leader>tg       test go (return to last ran test)
 Plug 'janko-m/vim-test'
 let g:test#strategy = 'neoterm'
-let g:test#ruby#rspec#executable = 'm'
-let g:test#ruby#minitest#executable = 'm'
 
 " Better terminal integration
 " Use neovim terminal to run tests with vim-test. Starts the terminal out
@@ -324,7 +333,8 @@ Plug 'sheerun/vim-polyglot'
 let g:polyglot_disabled = [
   \ 'elm',
   \ 'ruby',
-  \ 'javascript'
+  \ 'javascript',
+  \ 'clojure'
 \ ]
 
 " Elm
@@ -344,10 +354,6 @@ let g:polyglot_disabled = [
 Plug 'elmcast/elm-vim'
 let g:elm_setup_keybindings = 0
 
-" Javascript
-Plug 'pangloss/vim-javascript'
-let g:javascript_plugin_flow = 1
-
 " Ruby
 Plug 'vim-ruby/vim-ruby'
 
@@ -360,6 +366,16 @@ Plug 'vim-ruby/vim-ruby'
 " :R               edit 'related' file (depends)
 " :E*              starts many commands for editing different types of files
 Plug 'tpope/vim-rails'
+
+" Javascript
+Plug 'pangloss/vim-javascript'
+Plug 'hotoo/jsgf.vim'
+let g:javascript_plugin_flow = 1
+
+" Clojure
+"
+Plug 'tpope/vim-fireplace'
+Plug 'venantius/vim-cljfmt'
 
 " ColorSchemes
 " Some nice colorschemes, most of which require true color.
@@ -385,14 +401,18 @@ call plug#end()
 " I use something close to the default statusline, with the addition of
 " indicating the current git branch (requires fugitive) and showing linting
 " results (requires ALE).
+"
+" Also set the tabline that is visible when more than one tabpage is open. The
+" default tabline tries to keep full file paths while abbreviating the path to
+" save space. The result is hard to read, just use the file name instead.
 "===============================================================================
 
 if $TERM =~# 'xterm-256color' ||
  \ $TERM =~# 'screen-256color'      " true color terminals
   set termguicolors
-  set background=light
+  set background=dark
   colorscheme NeoSolarized
-else                                " limit pallet terminals
+else                                " limited pallet terminals
   set background=light
   colorscheme my_theme_light
 endif
@@ -407,6 +427,8 @@ set statusline+=%3(%)                     " padding
 set statusline+=%{StatuslineALE()}        " ALE errors/warnings, if any exist
 set statusline+=%=                        " right align
 set statusline+=%12(%l,%c%)%5p%%          " line and col number, % through file
+
+set tabline=%!MyTabLine()  " Build the tabline by iterating through the tab list
 
 
 "===============================================================================
@@ -433,6 +455,7 @@ set statusline+=%12(%l,%c%)%5p%%          " line and col number, % through file
 
 " a                insert after cursor
 " A                insert at end of line
+" <C-a>            increment number under cursor (pairs with <C-x>)
 
 " b                move word backward
 " B                move WORD backward
@@ -450,7 +473,7 @@ set statusline+=%12(%l,%c%)%5p%%          " line and col number, % through file
 "   co|            toggle colorcolumn at column 81
 noremap C "_c
 noremap CC "_cc
-nnoremap co<bar> :call <SID>ToggleColorColumn()<CR>
+nnoremap <silent> co<bar> :call <SID>ToggleColorColumn()<CR>
 
 " d{motion}        delete text
 " dd               delete line
@@ -473,6 +496,8 @@ noremap DD "_dd
 "   gf             edit rails file under cursor (vim-rails)
 "   gf             edit file at filepath under cursor
 "   gg             jump to start of file, or line N
+"   gj             down through a wrapped text line
+"   gk             up through a wrapped text line
 "   gl             swap current line with line [count] below
 "   gL             swap current line with line [count] above
 "   gp             paste from system clipboard, move cursor to end of pasted
@@ -480,12 +505,15 @@ noremap DD "_dd
 "   gP             paste from system clipboard, put text before cursor
 "   gq             reformat/wrap text
 "   gs             give spelling suggestions
+"   gt             go to the next tabpage
+"   gT             go to the previous tabpage
 "   gu             lowercase
 "   gU             uppercase
 "   gv             re-select last visual selection
 "   gy             yank to system clipboard
 "   {Visual}gy     yank selection to system clipboard
 "   gz             center window on cursor line
+"   g?             rot13 selection/motion
 " G                jump to end of file
 nnoremap gb :Gblame<CR>
 nmap gl v_]e
@@ -501,17 +529,13 @@ noremap gz zz
 " h                left
 " H                left 3 columns
 " <A-h>            previous buffer
-" {Insert}<A-h>    previous buffer, leave insert mode
 " {Term}<A-h>      previous buffer
 " <C-h>            focus window left
-" {Insert}<C-h>    focus window left, leave insert mode
 " {Term}<C-h>      focus window left
 nnoremap H hhh
 nnoremap <A-h> :bprevious<CR>
-inoremap <A-h> <ESC>:bprevious<CR>
 tnoremap <A-h> <C-\><C-n>:bprevious<CR>
 nnoremap <C-h> <C-w>h
-inoremap <C-h> <ESC><C-w>h
 tnoremap <C-h> <C-\><C-n><C-w>h
 
 " i                insert before cursor
@@ -520,41 +544,32 @@ tnoremap <C-h> <C-\><C-n><C-w>h
 
 " j                down
 " J                down 3 lines
-" <A-j>            down through wrapped line
 " <C-j>            focus window below
-" {Insert}<C-j>    focus window below, leave insert mode
 " {Term}<C-j>      focus window below
 nnoremap J jjj
 vnoremap J jjj
-nnoremap <A-j> gj
 nnoremap <C-j> <C-w>j
-inoremap <C-j> <ESC><C-w>j
 tnoremap <C-j> <C-\><C-n><C-w>j
 
 " k                up
 " K                up 3 lines
-" <A-k>            up through wrapped line
 " <C-k>            focus window above
-" {Insert}<C-k>    focus window above, leave insert mode
 " {Term}<C-k>      focus window above
+" {Insert}<C-k>    insert a diagraph (e.g. 'e' + ':' = 'ë')
 nnoremap K kkk
 vnoremap K kkk
-nnoremap <A-k> gk
 nnoremap <C-k> <C-w>k
-inoremap <C-k> <ESC><C-w>k
 tnoremap <C-k> <C-\><C-n><C-w>k
 
 " l                right
 " L                right 3 columns
 " <A-l>            next buffer
-" {Insert}<A-l>    next buffer, leave insert mode
 " {Term}<A-l>      next buffer
 " <C-l>            focus window right
 " {Insert}<C-l>    focus window right, leave insert mode
 " {Term}<C-l>      focus window right
 nnoremap L lll
 nnoremap <A-l> :bnext<CR>
-inoremap <A-l> <ESC>:bnext<CR>
 tnoremap <A-l> <C-\><C-n>:bnext<CR>
 nnoremap <C-l> <C-w>l
 inoremap <C-l> <ESC><C-w>l
@@ -612,12 +627,14 @@ nnoremap U <C-r>
 " v                enter visual mode
 " V                enter visual line mode
 " <C-v>            enter blockwise visual mode
+" {Insert}<C-v>    insert a character literal (e.g. <TAB> instead of 2 spaces)
 
 " w                move word forward
 " W                move WORD forward
 
 " x                delete char forward, don't save to register
 " X                delete char backward, don't save to register
+" <C-x>            decrement number under cursor (pairs with <C-a>)
 noremap x "_x
 noremap X "_X
 
@@ -689,10 +706,10 @@ vnoremap ; :
 " #                search for word under cursor backwards
 " {Visual}#        search for selection backward
 
-" <<               indent left
-" {Visual}<        indent selection left
-" >>               indent right
-" {Visual}>        indent selection right
+" >>               indent line
+" {Visual}>        indent selection
+" <<               un-indent line
+" {Visual}<        un-indent selection
 " ==               auto indent
 " {Visual}=        auto indent selection
 
@@ -719,18 +736,17 @@ vnoremap . :norm.<CR>
 " {FileBeagle}q    return to buffer FB was called from
 " {FileBeagle}<CR> go to directoy/edit file under cursor
 nnoremap - :FileBeagleBufferDir<CR>
+command! -nargs=+ -complete=file -bar FBMakeDir :Mkdir <args>|call feedkeys("R")
+autocmd vimrc FileType filebeagle nmap _ :FBMakeDir
 
-" <A-{*}>          auto close pair, quick and dirty version
-inoremap <A-'> ''<ESC>i
-inoremap <A-"> ""<ESC>i
-inoremap <A-`> ``<ESC>i
-inoremap <A-[> []<ESC>i
-inoremap <A-{> {}<ESC>i
-inoremap <A-(> ()<ESC>i
-
-" <Tab>            TODO
+" <Tab>            indent line/selection
+" <S-Tab>          un-indent line/selection
 " {Insert}<Tab>    show completion menu, scroll down through menu
 " {Insert}<S-Tab>  if the completion menu is open scroll up, else insert a tab
+nnoremap <Tab> >>
+nnoremap <S-Tab> <<
+vnoremap <Tab> >
+vnoremap <S-Tab> <
 imap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Plug>(cm_force_refresh)"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<Tab>"
 
@@ -767,12 +783,14 @@ nnoremap <silent> <Leader>e :Files ~<CR>
 "   <Leader>gb  fugitive git blame
 "   <Leader>gc  fzf search git commits
 "   <Leader>gd  fugitive git diff
+"   <Leader>gh  fzf search git commits for buffer (buffer's git history)
 "   <Leader>gm  open magit
 "   <Leader>gf  fzf search all files in current git repo
 "   <Leader>gs  fzf search `git status`, meaning files with unstaged changes
 nnoremap <silent> <Leader>gb :Gblame<CR>
 nnoremap <silent> <Leader>gc :Commits<CR>
 nnoremap <silent> <Leader>gd :Gdiff<CR>
+nnoremap <silent> <Leader>gh :BCommits<CR>
 nnoremap <silent> <Leader>gm :MagitOnly<CR>
 nnoremap <silent> <Leader>gf :GFiles<CR>
 nnoremap <silent> <Leader>gs :GFiles?<CR>
@@ -813,12 +831,10 @@ nnoremap <silent> <Leader>p :GFiles<CR>
 " <Leader>q  toggle the quickfix list, using ListToggle plugin
 
 " <Leader>r             TODO
-" {Visual}<Leader>r     rot13 selection
 " <Leader>R{*}          neoterm REPL
 "   <Leader>RR          send the current line to a REPL
 "   {Visual}<Leader>RR  send selection to a REPL
 "   <Leader>RF          send the current file to a REPL
-vnoremap <Leader>r g?
 nnoremap <Leader>RR :TREPLSendLine<CR>
 vnoremap <Leader>RR :TREPLSendSelection<CR>
 nnoremap <Leader>RF :TREPLSendFile<CR>
@@ -898,15 +914,34 @@ let g:maplocalleader = ','
 " These commands require that the vim root directory is also the base
 " directory of the elm project. If vim is opened from 'src/' then elm-make and
 " elm-oracle will fail.
+" <LocalLeader>m  compile current buffer
+" <LocalLeader>M  compile project
+" <LocalLeader>t  run tests (TODO: how is this different from vim-test?)
+" <LocalLeader>f  format file
 " <LocalLeader>d  shows the docs for the word under the cursor
 " <LocalLeader>D  opens web browser to docs for the word under the cursor
-" <LocalLeader>m  compiles current buffer
 autocmd vimrc FileType elm nmap <LocalLeader>m <Plug>(elm-make)
 autocmd vimrc FileType elm nmap <LocalLeader>M <Plug>(elm-make-main)
 autocmd vimrc FileType elm nmap <LocalLeader>t <Plug>(elm-test)
 autocmd vimrc FileType elm nmap <LocalLeader>f :ElmFormat<CR>
 autocmd vimrc FileType elm nmap <LocalLeader>d <Plug>(elm-show-docs)
 autocmd vimrc FileType elm nmap <LocalLeader>D <Plug>(elm-browse-docs)
+
+" Clojure
+" <LocalLeader>r  require the current namespace so it's updated in the nREPL
+" <LocalLeader>R  require the current namespace with the :reload-all flag
+" <LocalLeader>e  evaluate the innermost form under cursor
+" <LocalLeader>E  evaluate the outermost form under cursor
+" <LocalLeader>f  format file
+" <LocalLeader>d  show docs for token under cursor
+" <LocalLeader>s  show source for token under cursor
+autocmd vimrc FileType clojure nmap <LocalLeader>r :Require<CR>
+autocmd vimrc FileType clojure nmap <LocalLeader>R :Require!<CR>
+autocmd vimrc FileType clojure nmap <LocalLeader>e cpp
+autocmd vimrc FileType clojure nmap <LocalLeader>E :Eval<CR>
+autocmd vimrc FileType clojure nmap <LocalLeader>f :Cljfmt<CR>
+autocmd vimrc FileType clojure nmap <LocalLeader>d :Doc <C-r><C-w><CR>
+autocmd vimrc FileType clojure nmap <LocalLeader>s :Source <C-r><C-w><CR>
 
 
 "===============================================================================
@@ -981,6 +1016,7 @@ set shortmess+=I             " Don't show the intro
 set bufhidden=hide           " allow switching from an unsaved buffer
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
+set fillchars=vert:\│        " use unicode box drawing char to divide windows
 
 
 "===============================================================================
@@ -1073,4 +1109,30 @@ function! StatuslineALE()
   endif
 
   return ''
+endfunction
+
+function! MyTabLine()
+  let l:s = ''
+  for l:i in range(tabpagenr('$'))
+    " highlight the open tabpage
+    if l:i + 1 == tabpagenr()
+      let l:s .= '%#TabLineSel#'
+    else
+      let l:s .= '%#TabLine#'
+    endif
+
+    " list the filename of the selected window in each tabpage
+    let l:s .= '  %{MyTabLabel(' . (l:i + 1) . ')}  '
+  endfor
+
+  " after the last tabpage blank out the rest of the line
+  let l:s .= '%#TabLineFill#'
+
+  return l:s
+endfunction
+
+function! MyTabLabel(n)
+  let l:buflist = tabpagebuflist(a:n)
+  let l:winnr = tabpagewinnr(a:n)
+  return fnamemodify(bufname(l:buflist[l:winnr - 1]), ':t')
 endfunction
