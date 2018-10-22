@@ -1101,13 +1101,12 @@ autocmd FileType magit set textwidth=72
 
 " download the vim-plug package manager
 function! <SID>DownloadPlug()
-  let l:dir = glob(g:nvim_config_dir . '/autoload/plug.vim')
-  if empty(l:dir)
-    !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
-          \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-    echo 'Plug downloaded to ' . l:dir
+  let l:file = expand(g:nvim_config_dir . '/autoload/plug.vim')
+  if !filereadable(l:file)
+    execute '!curl -fLo ' . l:file . ' --create-dirs' . ' https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    echo 'Plug downloaded to ' . l:file
   else
-    echo 'Plug is already downloaded to ' . l:dir
+    echo 'Plug is already downloaded to ' . l:file
   endif
 endfunction
 
