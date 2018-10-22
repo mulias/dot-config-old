@@ -1,8 +1,6 @@
 "===============================================================================
 " init.vim
-" My cleaned up and documented config for neovim. If you like something you
-" see then take it! Please don't copy this entire file, no one learns vim by
-" using someone else's over-engineered setup :)
+" My cleaned up and documented config for neovim.
 "
 " Vim Compatibility
 " This config is only intended to work for neovim. If I only have access to
@@ -13,6 +11,8 @@
 " * Set `g:nvim_config_dir` and `g:nvim_data_dir` to appropriate values.
 " * Run ':DownloadPlug' to download the vim-plug package manager.
 " * Run ':PlugInstall' to fetch and install plugins.
+" * Run ':UpdateRemotePlugins' to register plugins that use an external
+"   runtimes (NCM2 uses python).
 " * Run ':CheckHealth' and make sure all checks are green. Install any missing
 "   libraries needed for Ruby, Python2, and Python3 support.
 " * FZF: Install Ag. If fzf can's find ag it falls back on grep, which is ok
@@ -20,8 +20,8 @@
 " * Neoformat: Install formatters for regularly used languages.
 " * ALE: Install linters for regularly used languages. Use ':ALEInfo' on a file
 "   to find out about linting that file type.
-" * NVim-Completion-Manager: Install optional pip modules `mistune`, `psutil`,
-"   and `setproctitle`. See ':h NCM-install'.
+" * LanguageClient-neovim: Install desired language servers and add executable
+"   paths to the LanguageClient_serverCommands map.
 " * Gutentags: Install Universal Ctags, or disable gutentags.
 "
 " Documentation
@@ -66,7 +66,7 @@ call plug#begin(g:nvim_config_dir . '/plugged')
 " Open fzf in a terminal buffer, with values loaded in from different sources.
 " Installs fzf locally to vim, instead or globally on the system.
 " <Leader>a        fzf search with ag (search all text in project)
-" <Leader>A        fzf search for word under cursor with ag
+" <Leader>A        fzf search with ag, full screen with preview
 " <Leader>b        fzf search buffer list
 " <Leader>e        fzf search all files under home dir
 " <Leader>gc       fzf search git commits
@@ -93,16 +93,13 @@ let g:fzf_action = {
 
 " Formatting
 " Find and run code formatters on buffer write.
+" cof                                enable/disable formating on save
 " :Neoformat [formatter]             run formatting on the current buffer
 " {Visual}:Neoformat [formatter]     run formatting on selection
 Plug 'sbdchd/neoformat'
 let g:neoformat_basic_format_retab = 1
 let g:neoformat_basic_format_trim = 1
-let g:neoformat_enabled_ruby = []
-let g:neoformat_enabled_javascript = []
-let g:neoformat_enabled_css = []
-let g:neoformat_enabled_scss = []
-autocmd vimrc BufWritePre * Neoformat
+autocmd vimrc BufWritePre * NeoformatIfEnabled
 
 " Linting
 " Find and run code linters on buffer write. Populates the location list with
@@ -110,6 +107,7 @@ autocmd vimrc BufWritePre * Neoformat
 " use linters installed on your system, unless 'g:ale_linters' is set
 " otherwise. ALE can be set to lint as you type, but I find that distracting.
 " <Leader>i        linting info related to error on line
+" coa              shortcut for :ALEToggle
 " :ALELint         manually run linters
 " :ALEToggle       turn ALE on/off for current buffer
 " :ALEDetail       show expanded message for error on line
@@ -126,34 +124,39 @@ let g:ale_lint_on_text_changed = 'never'
 let g:ale_lint_on_insert_leave = 0
 let g:ale_lint_on_enter = 1
 let g:ale_lint_on_save = 1
-let g:ale_ruby_rubocop_options = '-c .rubocop_ci.yml'
 
 " Toggle location and quickfix lists
 " <Leader>l        toggle location list
 " <Leader>q        toggle quickfix list
 Plug 'Valloric/ListToggle'
 
+" LanguageServer client
+" TODO: docs and servers
+Plug 'autozimu/LanguageClient-neovim', {
+  \ 'branch': 'next',
+  \ 'do': 'bash install.sh',
+  \ }
+
 " Completion
-" Provides a dropdown menu with completion suggestions. The menu is populated
-" with keywords from open vim buffers, project ctags, tmux panes, file paths,
-" snippet plugins like Ultisnips, and NCM language specific plugins. NCM can
-" be set to make suggestions as you type, but I prefer to call NCM manually
-" with <TAB>.
+" Provides a dropdown menu with completion suggestions. Completion sources are
+" configured with NCM specific plugins. NCM can be set to make suggestions as
+" you type, but I prefer to call NCM manually with <TAB>.
 " {Insert}<Tab>    open popup menu with completion suggestions
 " {Insert}<S-Tab>  insert the tab character
 " {Pmenu}<Tab>     scroll down through completion suggestions
 " {Pmenu}<S-Tab>   scroll up through completion suggestions
-Plug 'roxma/nvim-completion-manager'
-let g:cm_auto_popup = 0
-
-" Language Specific Completion
-" Extensions to NCM for specific languages.
-Plug 'Shougo/neco-syntax'        " parse vim syntax files for language keywords
-Plug 'roxma/ncm-rct-complete'    " ruby via rcodetools, does not support rails
-Plug 'calebeby/ncm-css'          " css, scss, sass, etc.
-Plug 'roxma/ncm-elm-oracle'      " elm via elm-oracle
-Plug 'roxma/nvim-cm-tern', {'do': 'npm install'}   " javascript via tern
-Plug 'clojure-vim/async-clj-omni'  " clojure through nREPL
+Plug 'ncm2/ncm2'
+Plug 'roxma/nvim-yarp'           " ncm2 dependency
+Plug 'ncm2/ncm2-bufword'         " open buffer contents
+Plug 'ncm2/ncm2-gtags'           " ctags/gtags managed by gutentags
+Plug 'ncm2/ncm2-path'            " file paths
+Plug 'ncm2/ncm2-tmux'            " tmux contents
+Plug 'ncm2/ncm2-syntax'          " language keywords from vim syntax files
+Plug 'Shougo/neco-syntax'        " ncm2-syntax dependency
+Plug 'ncm2/ncm2-cssomni'         " css, scss, sass, etc.
+let g:ncm2#auto_popup = 0
+let g:ncm2#complete_length=[[1,1]]
+autocmd vimrc BufEnter * call ncm2#enable_for_buffer()
 
 " Auto generate and manage ctags
 " Requires some version of ctags, such as Exuberant Ctags or Universal Ctags.
@@ -203,14 +206,15 @@ Plug 'junegunn/gv.vim'
 Plug 'jreybert/vimagit'
 
 " Simple file browser
-" -                open file beagle in buffer directory
-" {FileBeagle}+    add new file in directory
-" {FileBeagle}q    return to buffer FB was called from
-" {FileBeagle}<CR> go to directory/edit file under cursor
-" show hidden files and dirs, suppress the default binding of <Leader>f
-Plug 'jeetsukumaran/vim-filebeagle'
-let g:filebeagle_show_hidden = 1
-let g:filebeagle_suppress_keymaps = 1
+" View and navigate directories. The name of the Dirvish buffer is always set
+" to the current file path, so the % register can be used for file operations
+" such as `:!mkdir %foodir`, `:e %foo.txt`, or `:!rm %foo.txt`.
+" -                open Dirvish in file's directory
+" {Dirvish}-       move up to the parent directory
+" {Dirvish}q       return to buffer dirvish was called from
+" {Dirvish}<CR>    go to directory/edit file under cursor
+Plug 'justinmk/vim-dirvish'
+let g:dirvish_mode = ':sort ,^.*[\/],' " show directories first
 
 " Test integration
 " Run tests using the nvim terminal, with some extra conveniences provided by
@@ -257,19 +261,6 @@ Plug 'tpope/vim-surround'
 Plug 'rhysd/clever-f.vim'
 let g:clever_f_fix_key_direction = 1
 
-" Jump to next occurrence of two consecutive characters
-" s{c}{c}          jump forward to next occurrence of two consecutive chars
-" S{c}{c}          jump backward to previous occurrence of two consecutive chars
-" s<CR>            repeat last sneak forward
-" S<CR>            repeat last sneak backward
-" {Visual}s        sneak forward with visual selection
-" {Visual}Z        sneak backward with visual selection (surround uses S)
-Plug 'justinmk/vim-sneak'
-let g:sneak#s_next = 1
-let g:sneak#absolute_dir = 1
-autocmd vimrc ColorScheme * hi! link Sneak Search
-autocmd vimrc ColorScheme * hi! link SneakScope Visual
-
 " Useful pairs of keybindings, toggle vim settings
 " [b, [B, ]b, ]B   previous, first, next, last buffer
 " [l, [L, ]l, ]L   previous, first, next, last local list entry
@@ -313,16 +304,22 @@ Plug 'tpope/vim-endwise'
 Plug 'mbbill/undotree'
 let g:undotree_SetFocusWhenToggle = 1
 
+" Navigate by variable segments/sections
+" Move and manipulate sections of camelCase or snake_case variables.
+" s                move forward one variable segment
+" S                move back one variable segment
+" is/as            text object for a variable segment
+" iS/aS            new mappings for sentence text object
+Plug 'bkad/CamelCaseMotion'
+
 " Additional text objects
 " l                text object for a whole line or text in a line
 " e                text object for entire buffer, with/without trailing new lines
 " c                text object for a whole comment or the comment's contents
-" v                text object for part of a variable, snake_case or camelCase
 Plug 'kana/vim-textobj-user'
 Plug 'kana/vim-textobj-line'
 Plug 'kana/vim-textobj-entire'
 Plug 'glts/vim-textobj-comment'
-Plug 'Julian/vim-textobj-variable-segment'
 
 " Syntax/indent/compiler support
 " Provides general functionality for many popular file types. Best used for
@@ -373,7 +370,6 @@ Plug 'hotoo/jsgf.vim'
 let g:javascript_plugin_flow = 1
 
 " Clojure
-"
 Plug 'tpope/vim-fireplace'
 Plug 'venantius/vim-cljfmt'
 
@@ -432,10 +428,10 @@ set tabline=%!MyTabLine()  " Build the tabline by iterating through the tab list
 
 
 "===============================================================================
-" Key Mappings (Vim ABCs)
-" Common editing commands and motions, listed in alphabetical order. A number
-" of keymaps have been added, and a few defaults have been changed. Notable
-" changes to default behavior include:
+" Key Mappings
+" Common editing commands and motions, listed in alphabetical order. I've
+" added a number of keymaps and changed a few defaults. Notable changes to
+" default behavior include:
 "
 " C{motion}        change text, do not save to register
 " D{motion}        delete text, do not save to register
@@ -465,6 +461,8 @@ set tabline=%!MyTabLine()  " Build the tabline by iterating through the tab list
 " C{motion}        change text, do not save to register
 " CC               change line, do not save to register
 " co{*}            toggle options
+"   coa            toggle ALE
+"   cof            toggle Neoformat formatting on save
 "   coh            toggle hlsearch
 "   con            toggle line numbers
 "   cor            toggle relative line numbers
@@ -473,7 +471,9 @@ set tabline=%!MyTabLine()  " Build the tabline by iterating through the tab list
 "   co|            toggle colorcolumn at column 81
 noremap C "_c
 noremap CC "_cc
-nnoremap <silent> co<bar> :call <SID>ToggleColorColumn()<CR>
+nnoremap coa :ALEToggle<CR>
+nnoremap cof :NeoformatToggle<CR>
+nnoremap <silent> co<bar> :TCC<CR>
 
 " d{motion}        delete text
 " dd               delete line
@@ -493,9 +493,8 @@ noremap DD "_dd
 " g{*}             misc/variant actions
 "   gc{motion}     toggle commenting on lines that {motion} moves over
 "   gcc            comment/uncomment line
-"   gf             edit rails file under cursor (vim-rails)
 "   gf             edit file at filepath under cursor
-"   gg             jump to start of file, or line N
+"   gg             jump to start of file, or line N for {N}gg
 "   gj             down through a wrapped text line
 "   gk             up through a wrapped text line
 "   gl             swap current line with line [count] below
@@ -507,8 +506,10 @@ noremap DD "_dd
 "   gs             give spelling suggestions
 "   gt             go to the next tabpage
 "   gT             go to the previous tabpage
-"   gu             lowercase
-"   gU             uppercase
+"   gu{motion}     lowercase
+"   gU{motion}     uppercase
+"   guu            lowercase line
+"   gUU            uppercase line
 "   gv             re-select last visual selection
 "   gy             yank to system clipboard
 "   {Visual}gy     yank selection to system clipboard
@@ -602,16 +603,15 @@ noremap Q @q
 " r                replace single character
 " R                enter replace mode
 
-" s and S          sneak actions
-"   s{c}{c}        jump forward to next occurrence of two consecutive chars
-"   S{c}{c}        jump backward to previous occurrence of two consecutive chars
-"   s<CR>          repeat last sneak forward
-"   S<CR>          repeat last sneak backward
+" s                move forward by one camelCase or under_score word section
+" S                move backwards by one camelCase or under_score word section
 " s and S          surround actions
 "   cs{c1}{c1}     change surrounding chars from {c1} to {c2}
 "   ds{c}          delete surrounding chars {c}
 "   ys{motion}{c}  add new surrounding chars {c}
 "   {Visual}S{c}   surround selection with {c}
+map <silent> s <Plug>CamelCaseMotion_w
+map <silent> S <Plug>CamelCaseMotion_b
 
 " t{c}             find 'til {c} forward
 " T{c}             find 'til {c} backwards
@@ -731,13 +731,10 @@ vnoremap ; :
 " {Visual}.        repeat last command once on each line
 vnoremap . :norm.<CR>
 
-" -                open file beagle in buffer directory
-" {FileBeagle}+    edit new file in directory
-" {FileBeagle}q    return to buffer FB was called from
-" {FileBeagle}<CR> go to directoy/edit file under cursor
-nnoremap - :FileBeagleBufferDir<CR>
-command! -nargs=+ -complete=file -bar FBMakeDir :Mkdir <args>|call feedkeys("R")
-autocmd vimrc FileType filebeagle nmap _ :FBMakeDir
+" -                open Dirvish in file's directory
+" {Dirvish}-       move up to the parent directory
+" {Dirvish}q       return to buffer dirvish was called from
+" {Dirvish}<CR>    go to directory/edit file under cursor
 
 " <Tab>            indent line/selection
 " <S-Tab>          un-indent line/selection
@@ -747,7 +744,7 @@ nnoremap <Tab> >>
 nnoremap <S-Tab> <<
 vnoremap <Tab> >
 vnoremap <S-Tab> <
-imap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Plug>(cm_force_refresh)"
+imap <expr> <Tab> pumvisible() ? "\<C-n>" : "\<Plug>(ncm2_manual_trigger)"
 inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<Tab>"
 
 
@@ -761,9 +758,9 @@ inoremap <expr> <S-Tab> pumvisible() ? "\<C-p>" : "\<Tab>"
 let g:mapleader = "\<Space>"
 
 " <Leader>a  fzf search with ag (search all text in project)
-" <Leader>A  fzf search word under cursor with ag
-nnoremap <silent> <Leader>a :Ag<CR>
-nnoremap <silent> <Leader>A :Ag <CR><C-R><C-W>
+" <Leader>A  fzf search with ag, full screen with preview
+nnoremap <silent> <Leader>a :execute 'Ag ' . input('Ag: ')<CR>
+nnoremap <silent> <Leader>A :execute 'Ag! ' . input('Ag!: ')<CR>
 
 " <Leader>b  fzf search buffer list
 nnoremap <silent> <Leader>b :Buffers<CR>
@@ -861,7 +858,7 @@ nnoremap <Leader>u :UndotreeToggle<CR>
 noremap <Leader>v :vsplit<CR>
 noremap <Leader>V :split<CR>
 
-" <Leader>w         wrap/reformat the current line
+" <Leader>w         wrap/reformat the current line TODO: don't use this
 " {Visual}<Leader>w wrap/reformat selection
 nnoremap <Leader>w gqq
 vnoremap <Leader>w gq
@@ -946,6 +943,8 @@ autocmd vimrc FileType clojure nmap <LocalLeader>s :Source <C-r><C-w><CR>
 
 "===============================================================================
 " Text Objects
+" Note that the 's' sentence text object have been re-mapped to 'S', and the
+" original bindings have been repurposed for variable segments/sections.
 "===============================================================================
 
 " i{*}             inner/inside text object
@@ -954,19 +953,28 @@ autocmd vimrc FileType clojure nmap <LocalLeader>s :Source <C-r><C-w><CR>
 "   e              entire buffer
 "   l              line
 "   p              paragraph
-"   s              sentence
+"   s              variable segment, either snake_case or camelCase
+"   S              sentence
 "   t              html tags
-"   v              variable segment, either snake_case or camelCase
 "   w              word
 "   W              WORD
 "   [ or ], ( or ),
 "   < or >, { or } matching pairs
 "   `, ", '        matching quotes
+onoremap <silent> iS is
+xnoremap <silent> iS is
+onoremap <silent> aS as
+xnoremap <silent> aS as
+omap <silent> is <Plug>CamelCaseMotion_iw
+xmap <silent> is <Plug>CamelCaseMotion_iw
+omap <silent> as <Plug>CamelCaseMotion_iw
+xmap <silent> as <Plug>CamelCaseMotion_iw
 
 
 "===============================================================================
 " Commands
-" Functions that I don't use enough to motivate key bindings.
+" Features that I don't use enough to motivate key bindings and custom
+" function bindings.
 "===============================================================================
 
 " Highlight the color column, defaults to col 81 if nothing else is set
@@ -975,11 +983,25 @@ command! TCC call <SID>ToggleColorColumn()
 " Download the vim-plug package manager
 command! DownloadPlug call <SID>DownloadPlug()
 
+" Toggle Neoformat so that it doesn't run on every save
+command! NeoformatToggle call <SID>NeoformatToggle()
+
+" Run Neoformat as long as NeoformatToggle has not disabled it
+command! NeoformatIfEnabled call <SID>NeoformatIfEnabled()
+
+" When running Ag through fzf, don't include the file path when filtering.
+" Also show a preview window when doing a fullscreen Ag! search.
+command! -bang -nargs=* Ag
+  \ call fzf#vim#ag(<q-args>,
+  \                 <bang>0 ? fzf#vim#with_preview({'options': '--delimiter : --nth 4..'}, 'right:50%')
+  \                         : {'options': '--delimiter : --nth 4..'},
+  \                 <bang>0)
+
 " Plug starts with ':Plug*', includes Install, Clean, Update, Upgrade.
 
 " Git starts with ':G*', includes blame, diff. Use ':GV' to view git history.
 
-" Unix utilities include ':SudoEdit', ':SudoWrite', ':Move', and ':Remove'.
+" Unix utilities include ':SudoEdit', ':Mkdir', ':Move', and ':Remove'.
 
 " Rails
 " ':Rpreview' open webpage, ':A' edit 'alternate' file (usually test)
@@ -1017,6 +1039,8 @@ set bufhidden=hide           " allow switching from an unsaved buffer
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
 set fillchars=vert:\│        " use unicode box drawing char to divide windows
+set completeopt=menuone      " show completion menu even if there's only one opt
+set completeopt+=noinsert    " ... and prevent automatic text injection
 
 
 "===============================================================================
@@ -1060,6 +1084,15 @@ autocmd vimrc BufWritePost $MYVIMRC source $MYVIMRC
 autocmd vimrc FileType elm setlocal tabstop=4
 autocmd vimrc FileType elm setlocal shiftwidth=4
 
+" python: tab nonsense
+autocmd vimrc FileType python setlocal noexpandtab
+autocmd vimrc FileType python setlocal tabstop=8
+autocmd vimrc FileType python setlocal softtabstop=8
+
+" git: wrap at 72 characters
+autocmd FileType gitcommit set textwidth=72
+autocmd FileType magit set textwidth=72
+
 
 "===============================================================================
 " Helper Functions
@@ -1093,6 +1126,23 @@ function! <SID>ToggleColorColumn()
     setlocal colorcolumn=81
   endif
 endfunc
+
+function! <SID>NeoformatToggle()
+  if !exists('b:disable_neoformat_in_buffer')
+    let b:disable_neoformat_in_buffer = 1
+  else
+    let b:disable_neoformat_in_buffer = !b:disable_neoformat_in_buffer
+  endif
+  echo('Neoformat ' . (b:disable_neoformat_in_buffer ? 'disabled' : 'enabled'))
+
+  return b:disable_neoformat_in_buffer
+endfunction
+
+function! <SID>NeoformatIfEnabled()
+  if !exists('b:disable_neoformat_in_buffer') || !b:disable_neoformat_in_buffer
+    Neoformat
+  endif
+endfunction
 
 function! StatuslineALE()
   let l:issues = ale#statusline#Count(bufnr('%'))
