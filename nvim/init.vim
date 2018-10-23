@@ -92,13 +92,25 @@ let g:fzf_action = {
 \ }
 
 " Formatting
-" Find and run code formatters on buffer write.
+" Find and run code formatters on buffer write. Neoformat automatically
+" searches for global executables, but not project-local ones. I've
+" added a prettier config for JS and TS that checks node_modules first,
+" then falls back on a global prettier install.
 " cof                                enable/disable formating on save
 " :Neoformat [formatter]             run formatting on the current buffer
 " {Visual}:Neoformat [formatter]     run formatting on selection
 Plug 'sbdchd/neoformat'
 let g:neoformat_basic_format_retab = 1
 let g:neoformat_basic_format_trim = 1
+let g:neoformat_localprettier = {
+      \ 'exe': './node_modules/.bin/prettier',
+      \ 'args': ['--stdin', '--stdin-filepath', '"%:p"', '--parser', 'typescript'],
+      \ 'stdin': 1
+      \ }
+let g:neoformat_javascript_localprettier = g:neoformat_localprettier
+let g:neoformat_enabled_javascript = ['localprettier', 'prettier']
+let g:neoformat_typescript_localprettier = g:neoformat_localprettier
+let g:neoformat_enabled_typescript = ['localprettier', 'prettier']
 autocmd vimrc BufWritePre * NeoformatIfEnabled
 
 " Linting
@@ -1038,7 +1050,7 @@ set shortmess+=I             " Don't show the intro
 set bufhidden=hide           " allow switching from an unsaved buffer
 set autowrite                " auto write file when switching buffers
 set wildmode=longest:full    " bash-style command mode completion
-set fillchars=vert:\│        " use unicode box drawing char to divide windows
+set fillchars=vert:\|        " use vertical bars to divide windows
 set completeopt=menuone      " show completion menu even if there's only one opt
 set completeopt+=noinsert    " ... and prevent automatic text injection
 
