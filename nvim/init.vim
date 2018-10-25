@@ -96,20 +96,23 @@ let g:fzf_action = {
 " searches for global executables, but not project-local ones. I've
 " added a prettier config for JS and TS that checks node_modules first,
 " then falls back on a global prettier install.
-" cof                                enable/disable formating on save
+" cof                                enable/disable formatting on save
 " :Neoformat [formatter]             run formatting on the current buffer
 " {Visual}:Neoformat [formatter]     run formatting on selection
 Plug 'sbdchd/neoformat'
 let g:neoformat_basic_format_retab = 1
 let g:neoformat_basic_format_trim = 1
-let g:neoformat_localprettier = {
+let g:neoformat_javascript_localprettier = {
+      \ 'exe': './node_modules/.bin/prettier',
+      \ 'args': ['--stdin', '--stdin-filepath', '"%:p"'],
+      \ 'stdin': 1
+      \ }
+let g:neoformat_enabled_javascript = ['localprettier', 'prettier']
+let g:neoformat_typescript_localprettier = {
       \ 'exe': './node_modules/.bin/prettier',
       \ 'args': ['--stdin', '--stdin-filepath', '"%:p"', '--parser', 'typescript'],
       \ 'stdin': 1
       \ }
-let g:neoformat_javascript_localprettier = g:neoformat_localprettier
-let g:neoformat_enabled_javascript = ['localprettier', 'prettier']
-let g:neoformat_typescript_localprettier = g:neoformat_localprettier
 let g:neoformat_enabled_typescript = ['localprettier', 'prettier']
 autocmd vimrc BufWritePre * NeoformatIfEnabled
 
@@ -118,8 +121,10 @@ autocmd vimrc BufWritePre * NeoformatIfEnabled
 " errors and warning for the current buffer. ALE will automatically find and
 " use linters installed on your system, unless 'g:ale_linters' is set
 " otherwise. ALE can be set to lint as you type, but I find that distracting.
-" <Leader>i        linting info related to error on line
 " coa              shortcut for :ALEToggle
+" [l, [L, ]l, ]L   jump to previous, first, next, last location list entry
+" <Leader>i        linting info related to error on line
+" <Leader>l        toggle location list
 " :ALELint         manually run linters
 " :ALEToggle       turn ALE on/off for current buffer
 " :ALEDetail       show expanded message for error on line
@@ -138,6 +143,9 @@ let g:ale_lint_on_enter = 1
 let g:ale_lint_on_save = 1
 
 " Toggle location and quickfix lists
+" These lists may be used in a number of situations. Of note, ALE populates
+" the location list with linting errors, and selecting multiple fzf entries
+" with <TAB> adds the entries to the quickfix list.
 " <Leader>l        toggle location list
 " <Leader>q        toggle quickfix list
 Plug 'Valloric/ListToggle'
@@ -275,7 +283,7 @@ let g:clever_f_fix_key_direction = 1
 
 " Useful pairs of keybindings, toggle vim settings
 " [b, [B, ]b, ]B   previous, first, next, last buffer
-" [l, [L, ]l, ]L   previous, first, next, last local list entry
+" [l, [L, ]l, ]L   previous, first, next, last location list entry
 " [q, [Q, ]q, ]Q   previous, first, next, last quickfix list entry
 " [t, [T, ]t, ]T   previous, first, next, last tag stack entry
 " [y{motion}       encode string with c-style escape sequences
@@ -425,12 +433,12 @@ else                                " limited pallet terminals
   colorscheme my_theme_light
 endif
 
-set statusline=%<                         " truncate from start if necessary
-set statusline+=%f                        " full filepath
+set statusline=%f                         " full filepath
 set statusline+=%1(%)                     " padding
 set statusline+=%h%q%w                    " tags: help, quickfix, preview
 set statusline+=%m%r                      " tags: modified, read only
 set statusline+=%([%{fugitive#head()}]%)  " git branch
+set statusline+=%<                        " truncate point
 set statusline+=%3(%)                     " padding
 set statusline+=%{StatuslineALE()}        " ALE errors/warnings, if any exist
 set statusline+=%=                        " right align
